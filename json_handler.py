@@ -26,16 +26,16 @@ class JsonHandler():
         with open(self.path, 'w') as file:
             dump(data, file, indent=4)
 
-    def add_origin(self, path: str) -> None:
+    def add_origin(self, origin_path: str) -> None:
         data: Dict[str, Any] = self.read()
-        data.update({path: {'metadata': {'hash': None, 'changed': True},
-            'clones': {}}})
+        data.update({origin_path: {'metadata': {'hash': None, 'changed': True},
+            'copies': {}}})
         self.write(data)
         
-    def add_clone(self, origin: str, clone: str) -> None:
+    def add_copy(self, origin_path: str, copy_path: str) -> None:
         data: Dict[str, Any] = self.read()
-        clone_dict: Dict[str, Dict[str, None]] = {clone: {'hash': None}}
-        data[origin]['clones'].update(clone_dict)
+        copy_dict: Dict[str, Dict[str, None]] = {copy_path: {'hash': None}}
+        data[origin_path]['copies'].update(copy_dict)
         self.write(data);
 
 
@@ -43,7 +43,7 @@ def main() -> None:
     jh = JsonHandler('store.json')
     jh.add_origin('file1.txt')
     jh.add_origin('file2.txt')
-    jh.add_clone('file1.txt', 'file3.txt')
+    jh.add_copy('file1.txt', 'file3.txt')
     print(jh.read())
 
 
