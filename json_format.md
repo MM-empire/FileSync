@@ -1,4 +1,4 @@
-```json
+```
 {
  <origin_path>: 
                { "metadata": 
