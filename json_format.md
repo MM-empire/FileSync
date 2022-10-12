@@ -1,5 +1,16 @@
 ```json
 {
- "origin_path" : { "paths_to_copy": { "hash": hash, "is_changed": true/false, "metadat" : ... } }, ..., ...
+ <origin_path>: 
+               { "metadata": 
+                            {'hash': <hash>, 
+                            'changed': <true\false>}, 
+                  'clones': 
+                           {<clone_path>: 
+                                         {'hash': <hash>}, 
+                                          ..., 
+                                          ... 
+                           }
+               }
+ ...,
+ ...
 }
-```
