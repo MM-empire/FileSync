@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
 
-import hashlib
+from hashlib import sha1
 from os.path import exists
 
 
 class HashHandler():
     def __init__(self, path: str) -> None:
-        self.__path = path
+        self.__path: str = path
         if exists(path):
-            self.__hash_hex = self.__calculateHash(self.__path)
+            self.__hash_hex: str = self.__calculateHash(self.__path)
         else:
             pass
 
@@ -29,12 +29,13 @@ class HashHandler():
             pass
 
     def compareHash(self, comp_file_path: str) -> bool:
+        flag: bool = False
         if (self.__hash_hex == self.__calculateHash(comp_file_path)):
-            return True
-        else:
-            return False
+            flga = True
 
-    def __biteReadFile(self, path: str) -> bytes:
+        return flag
+
+    def __byteReadFile(self, path: str) -> bytes:
         with open(path, 'rb') as file:
             return file.read()
 
@@ -42,11 +43,10 @@ class HashHandler():
         if (path == ''):
             path = self.__path
 
-        buf = self.__biteReadFile(path)
-        hasher = hashlib.sha1()
+        buf: bytes = self.__byteReadFile(path)
+        hasher = sha1()
         hasher.update(buf)
         hash_hex = hasher.hexdigest()
-        self.__hash_hex = hash_hex
         return hash_hex
 
 
