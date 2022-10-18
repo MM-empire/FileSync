@@ -5,7 +5,7 @@ from typing import Dict, Any
 
 class JsonHandler():
     def __init__(self, path: str) -> None:
-        self.__path: str = path
+        self.path: str = path
         if not exists(path):
             self.write({})
             
@@ -15,12 +15,13 @@ class JsonHandler():
 
     @path.setter
     def path(self, path: str) -> None:
+        if not path.endswith('.json'):
+            raise FileNotFoundError
         self.__path = path
     
     def read(self) -> Dict[str, Any]:
         with open(self.path, 'r') as file:
-            data: Dict[str, Any] = load(file)
-        return data
+            return load(file)
 
     def write(self, data: Dict[str, Any]) -> None:
         with open(self.path, 'w') as file:
