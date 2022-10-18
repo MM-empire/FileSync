@@ -1,0 +1,20 @@
+{
+    "file1.txt": {
+        "metadata": {
+            "hash": null,
+            "changed": true
+        },
+        "copies": {
+            "file3.txt": {
+                "hash": null
+            }
+        }
+    },
+    "file2.txt": {
+        "metadata": {
+            "hash": null,
+            "changed": true
+        },
+        "copies": {}
+    }
+}

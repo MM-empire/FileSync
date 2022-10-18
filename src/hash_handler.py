@@ -10,7 +10,7 @@ class HashHandler():
         if exists(path):
             self.__hash_hex: str = self.__calculateHash(self.__path)
         else:
-            pass
+            raise FileNotFoundError
 
     @property
     def hash(self) -> str:
