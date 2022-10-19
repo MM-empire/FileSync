@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 
 from hashlib import sha1
-from os.path import exists
+from pathlib import Path
 
 
 class HashHandler():
-    def __init__(self, path: str) -> None:
-        self.__path: str = path
-        if exists(path):
+    def __init__(self, path: Path) -> None:
+        self.__path: Path = path
+        if path.exists():
             self.__hash_hex: str = self.__calculateHash(self.__path)
         else:
             raise FileNotFoundError
@@ -23,17 +23,17 @@ class HashHandler():
     @path.setter
     def path(self, path: str) -> None:
         self.__path = path
-        if exists(path):
+        if path.exists():
             self.__hash_hex = self.__calculateHash(self.__path)
         else:
             raise FileNotFoundError
 
-    def __byteReadFile(self, path: str) -> bytes:
-        with open(path, 'rb') as file:
+    def __byteReadFile(self, path: Path) -> bytes:
+        with open(path.name, 'rb') as file:
             return file.read()
 
-    def __calculateHash(self, path: str = '') -> str:
-        if (path == ''):
+    def __calculateHash(self, path: Path=Path('')) -> str:
+        if (path.name == ''):
             path = self.__path
 
         buf: bytes = self.__byteReadFile(path)
