@@ -8,7 +8,10 @@ import typer
 app = typer.Typer()
 
 @app.command()
-def add(origin: Path = typer.Argument(..., help="Origin file path"), destination: Path = typer.Argument(..., help="Destination file path")):
+def add(
+        origin: Path = typer.Argument(..., help="Origin file path"),
+        destination: Path = typer.Argument(..., help="Destination file path")
+    ):
     """
     Add files to synchronize list
     """
@@ -29,18 +32,18 @@ def sync(
     """
     Synchronize added files
     """
-    if (all):
+    if all:
         print(f"Sync all added files")
 
-    elif (current_dir and not path):
+    elif current_dir and not path:
         print(f"Sync added files in current directory")
 
-    elif (current_dir and path):
+    elif current_dir and path:
         print(f"Sync added files in current directory and files")
         for p in path:
             print(p)
 
-    elif (path):
+    elif path:
         print(f"Sync files")
         for p in path:
             print(p)
