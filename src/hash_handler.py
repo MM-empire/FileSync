@@ -29,11 +29,10 @@ class HashHandler():
             pass
 
     def compareHash(self, comp_file_path: str) -> bool:
-        flag: bool = False
         if (self.__hash_hex == self.__calculateHash(comp_file_path)):
-            flga = True
+            return True
 
-        return flag
+        return False
 
     def __byteReadFile(self, path: str) -> bytes:
         with open(path, 'rb') as file:
