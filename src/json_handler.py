@@ -1,6 +1,6 @@
 from json import dump, load
 from os.path import exists
-from typing import Dict, Any
+from typing import Dict, Any, List
 
 from filesync_exceptions import CopyDoesNotExistsError, OriginDoesNotExistsError
 
@@ -59,6 +59,34 @@ class JsonHandler():
         copy_dict: Dict[str, Dict[str, None]] = {copy: {'hash': None}}
         data[origin]['copies'].update(copy_dict)
         self.write(data);
+
+    def get_origins(self) -> List[str]:
+        data: Dict[str, Any] = self.read()
+        return list(data.keys())
+
+    def get_copies(self, origin: str) -> List[str]:
+        data: Dict[str, Any] = self.read()
+        return list(data[origin]['copies'].keys())
+
+    def remove_origin(self, origin: str) -> None:
+        self.check_existing(origin)
+        data: Dict[str, Any] = self.read()
+        data.__delitem__(origin)
+        self.write(data)
+
+    def remove_copy(self, origin: str, copy: str) -> None:
+        self.check_existing(origin, copy)
+        data: Dict[str, Any] = self.read()
+        data[origin]['copies'].__delitem__(copy)
+        self.write(data)
+
+    def get_changed_origins(self) -> List[str]:
+        data: Dict[str, Any] = self.read()
+        changed_origins: List[str] = []
+        for origin in data:
+            if data[origin]['metadata']['changed'] == True:
+                changed_origins.append(origin)
+        return changed_origins
 
 def main() -> None:
     jh = JsonHandler('store.json')
