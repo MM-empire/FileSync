@@ -7,9 +7,8 @@ from typing import Dict, Any, List
 from json_handler import JsonHandler
 from hash_handler import HashHandler
 
-# TODO make adequate import
-from filesync_exceptions import CopyDoesNotExistsError, OriginDoesNotExistsError
-
+from filesync_exceptions import CopyDoesNotExistsError, \
+        OriginDoesNotExistsError
 
 class FileSync():
     def __init__(self, path: str) -> None:
@@ -53,17 +52,16 @@ class FileSync():
     def update_statuses(self) -> None:
         data: Dict[str, Any] = self.__json_handler.read()
         for origin in data:
-            print(origin)
             hasher: HashHandler = HashHandler(origin)
             if data[origin]['metadata']['hash'] != hasher.hash:
                 data[origin]['metadata']['changed'] = True
         self.__json_handler.write(data)
 
-    def reset_origins_hash(self) -> None:
-        changed_origins: List[str] = self.__json_handler.get_changed_origins()
-        origin: str
-        for origin in changed_origins:
-            slef.set_origin_hash(origin)
+    #def reset_origins_hash(self) -> None:
+        #changed_origins: List[str] = self.__json_handler.get_changed_origins()
+        #origin: str
+        #for origin in changed_origins:
+            #slef.set_origin_hash(origin)
 
     def unset_changed_origins(self) -> None:
         changed_origins: List[str] = self.__json_handler.get_changed_origins()
@@ -91,7 +89,7 @@ class FileSync():
 
 def main() -> None:
     fs = FileSync(r'store.json')
-    fs.add(r'test.txt', r'test2.txt')
+    fs.add(r'/home/user/sandbox/python/test.txt', r'lorem_ipsum.txt')
     fs.sync()
 
 if __name__ == '__main__':

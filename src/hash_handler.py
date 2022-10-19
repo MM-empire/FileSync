@@ -26,14 +26,7 @@ class HashHandler():
         if exists(path):
             self.__hash_hex = self.__calculateHash(self.__path)
         else:
-            pass
-
-    def compareHash(self, comp_file_path: str) -> bool:
-        flag: bool = False
-        if (self.__hash_hex == self.__calculateHash(comp_file_path)):
-            flga = True
-
-        return flag
+            raise FileNotFoundError
 
     def __byteReadFile(self, path: str) -> bytes:
         with open(path, 'rb') as file:

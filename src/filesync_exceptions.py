@@ -10,7 +10,6 @@ class OriginDoesNotExistsError(Exception):
 
 
 def main() -> None:
-    raise OriginDoesNotExistsError('origin')
     raise CopyDoesNotExistsError('origin', 'copy')
 
 if __name__ == '__main__':

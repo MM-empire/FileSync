@@ -2,7 +2,8 @@ from json import dump, load
 from os.path import exists
 from typing import Dict, Any, List
 
-from filesync_exceptions import CopyDoesNotExistsError, OriginDoesNotExistsError
+from filesync_exceptions import CopyDoesNotExistsError, \
+        OriginDoesNotExistsError
 
 
 class JsonHandler():
