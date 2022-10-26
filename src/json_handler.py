@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from json import dump, load
 from pathlib import Path
 from typing import Dict, Any, List, Optional
