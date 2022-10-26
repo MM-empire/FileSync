@@ -6,7 +6,7 @@ from pathlib import Path
 
 class HashHandler():
     @staticmethod
-    def __byte_readFile(path: Path) -> bytes:
+    def __byte_read_file(path: Path) -> bytes:
         with open(str(path), 'rb') as file:
             return file.read()
 
