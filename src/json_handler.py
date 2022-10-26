@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 from json import dump, load
 from os.path import exists
 from typing import Dict, Any
