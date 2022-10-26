@@ -8,6 +8,7 @@ class HashHandler():
     @staticmethod
     def __byte_read_file(path: Path) -> bytes:
         with open(str(path), 'rb') as file:
+
             return file.read()
 
     @staticmethod
