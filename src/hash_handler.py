@@ -13,7 +13,7 @@ class HashHandler():
 
     @staticmethod
     def calculate_hash(path: Path, algorithm: str='sha1') -> str:
-        buf: bytes = HashHandler.__byte_readFile(path)
+        buf: bytes = HashHandler.__byte_read_file(path)
         hasher = new(algorithm)
         hasher.update(buf)
         hash_hex = hasher.hexdigest()
