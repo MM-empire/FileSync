@@ -12,7 +12,6 @@ class JsonHandler():
         self.path: Path = path
         if not path.exists():
             self.write({})
-            
     @property
     def path(self) -> Path:
         return self.__path
@@ -47,7 +46,7 @@ class JsonHandler():
         if not self.exists_origin(origin):
             raise OriginDoesNotExistsError(origin)
         if copy and not self.exists_copy(origin, copy):
-            print(str(copy))
+            # print(str(copy))
             raise CopyDoesNotExistsError(origin, copy)
 
     def add_origin(self, origin: Path) -> None:
@@ -92,6 +91,25 @@ class JsonHandler():
                 data if data[path]['metadata']['changed'] == True]
 
         return changed_origins
+
+    def get_changed_copies(self):
+        """
+        Return list with origin paths and all copies paths of this origin
+        With a structure [origin, [copy]]
+        """
+        data: Dict[str, Any] = self.read()
+        changed_copies: List[Path, List[Path]] = []
+        for origin in data:
+            copies_list: List[Path] = []
+            flag_changed = False
+            for copy in data[origin]['copies']:
+                if data[origin]['metadata']['hash'] != data[origin]['copies'][copy]['hash']:
+                    copies_list.append(Path(copy))
+                    flag_changed = True
+            if flag_changed:
+                changed_copies.append([Path(origin), copies_list])
+        
+        return changed_copies
 
 def main() -> None:
     jh = JsonHandler(Path('store.json'))
