@@ -38,7 +38,7 @@ class JsonHandler():
 
     def exists_copy(self, origin: Path, copy: Path) -> bool:
         data: Dict[str, Any] = self.read()
-        if data[str(origin)]['copies']:
+        if data[str(origin)]['copies'] and copy in self.get_copies(origin):
             return True
         return False
 
