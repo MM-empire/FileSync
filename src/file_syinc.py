@@ -2,17 +2,25 @@
 
 from pathlib import Path
 from shutil import copy as shutil_copy
-from typing import Dict, Any, List, Union
+from typing import Dict, Any, List, Union, Optional
+from os import environ
 
 from json_handler import JsonHandler
 from hash_handler import HashHandler
-
 from exceptions import CopyDoesNotExistsError, \
         OriginDoesNotExistsError
 
 
 class FileSync():
-    def __init__(self, path: Path) -> None:
+    def __init__(self, path: Optional[Path]=None) -> None:
+        if not path:
+            path: Path = Path(environ['HOME'] + \
+                    r'/.config/filesync/dependencies.json')
+            if not path.exists():
+                derect: Path = Path(environ['HOME'] + r'/.config/filesync/')
+                direct.mkdir(parents=True, exist_ok=True)
+                direct: Path = Path(environ['HOME'] + \
+                        r'/.config/filesync/dependencies.json')
         self.__json_handler = JsonHandler(path)
 
     # set mapping for *copies
@@ -88,6 +96,12 @@ class FileSync():
         shutil_copy(str(origin), str(copy))
         self.set_copy_hash(origin, copy)
 
+    def sync_all_copies(self, origin: Path):
+        copies: List[Path] = self.__json_handler.get_copies(origin)
+        copy: Path
+        for copy in copies:
+            self.sync_two_files(origin, copy)
+
     def full_sync(self) -> None:
         self.update_statuses()
         self.update_copies()
@@ -97,10 +111,9 @@ class FileSync():
     #TODO main methods: comparing, copying
 
 def main() -> None:
-    jsn: Path = Path('store.json')
     origin: Path = Path('/home/user/sandbox/cprogs/hello.c')
     copy: Path = Path('/home/user/FileSync/src/hello.c')
-    fs = FileSync(jsn)
+    fs = FileSync()
     fs.add(origin, copy)
     fs.sync_two_files(origin, copy)
 
