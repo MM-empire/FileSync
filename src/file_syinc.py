@@ -17,12 +17,14 @@ class FileSync():
 
     # set mapping for *copies
     def add(self, origin: Path, copies: List[Path]) -> None:
-       self.__json_handler.add_origin(origin)
-       self.__set_origin_hash(origin)
-       copy: Path
-       for copy in copies:
-           self.__json_handler.add_copy(origin, copy)
-           if copy.is_file():
+        origin = origin.resolve()
+        self.__json_handler.add_origin(origin)
+        self.__set_origin_hash(origin)
+        copy: Path
+        for copy in copies:
+            copy = copy.resolve()
+            self.__json_handler.add_copy(origin, copy)
+            if copy.is_file():
                self.__set_copy_hash(origin, copy)
 
     # set mapping for *copies
@@ -102,19 +104,65 @@ class FileSync():
         self.update_copies()
         self.unset_changed_origins()
 
-    def sync(self) -> None:
+    def sync_all(self) -> None:
+        """
+        Synchronize all copies of all origins
+        """
         self.update_statuses()
         self.update_hashes()
         self.update_copies()
         self.unset_changed_origins()
 
         changed: [Path, List[Path]]
-        for changed in self.__json_handler.get_changed_copies():
+        for changed in self.__json_handler.get_all_changed_copies():
             for copy in changed[1]:
-                print(changed[0], copy)
+                print(f"Update: {changed[0]} {copy}")
                 shutil_copy(str(changed[0]), str(copy))
 
         self.update_hashes()
+
+    def sync(self, origin: Path) -> None:
+        """
+        Synchronize copies of origin
+        """
+        origin = origin.resolve()
+        self.update_statuses()
+        self.update_hashes()
+        self.update_copies()
+        self.unset_changed_origins()
+
+        for p in self.__json_handler.get_copies(origin):
+            print(f"origin: {origin}, sync: {p}")
+            shutil_copy(origin, src(p))
+            
+        self.update_hashes()
+
+    def get_origins(self) -> List[Path]:
+        """
+        Return list of all origins paths
+        """
+        return [Path(origin).resolve() for origin in self.__json_handler.get_origins()]
+        # return self.__json_handler.get_origins()
+
+    def get_copies(self, origin: Path) -> List[Path]:
+        """
+        Return copies paths of origin
+        """
+        origin = origin.resolve()
+        return self.__json_handler.get_copies(origin)
+
+    # def list_all(self) -> List[Path, List[Path]]:
+    #     """
+    #     Return list of all origins and its copies
+    #     """
+    #     list: List[Path, List[Path]] = []
+    #     for origin in self.get_origins():
+    #         tmp: List[Path] = []
+    #         for copy in self.get_copies(origin):
+    #             tmp.append(copy)
+    #         list.append([origin, tmp])
+    #     # return [origin [copy for copy in self.get_copies(origin)] for origin in self.get_origins()]
+    #     return list
 
     def __create_file(self, path: str):
         if not Path(path).is_file():
@@ -127,10 +175,17 @@ class FileSync():
 
 def main() -> None:
     jsn: Path = Path('store.json')
-    origin: Path = Path('file2.file')
+    origin: Path = Path('file2.file').resolve()
     copy: Path = [Path('./test-dir/file2.new'), 
                   Path('./test-dir/file2.file')]
-    # fs = FileSync(jsn)
+    fs = FileSync(jsn)
+    for o in fs.get_origins():
+        print(fs.get_copies(o))
+    # print(fs.list_all())
+    # print(type(origin))
+    # print(origin)
+    # print(fs.get_copies(origin))
+    # print(str(origin))
     # fs.update_hashes()
     # fs.add(origin, copy)
     # fs.sync_two_files(origin, copy)
