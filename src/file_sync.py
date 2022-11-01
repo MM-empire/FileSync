@@ -84,7 +84,6 @@ class FileSync():
         changed: [Path, List[Path]]
         for changed in self.__json_handler.get_all_changed_copies():
             for copy in changed[1]:
-                print(f"Update: {changed[0]} {copy}")
                 shutil_copy(str(changed[0]), str(copy))
 
         self.update_hashes()
@@ -100,8 +99,7 @@ class FileSync():
         self.__unset_changed_origins()
 
         for p in self.__json_handler.get_copies(origin):
-            print(f"origin: {origin}, sync: {p}")
-            shutil_copy(origin, src(p))
+            shutil_copy(origin, str(p))
             
         self.update_hashes()
 

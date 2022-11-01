@@ -52,12 +52,13 @@ def sync(
         print(f"Sync added files in path")
         for p in path_list:
             if p.is_dir():
+                origins: List[Path] = fs.get_origins()
                 for f in p.iterdir():
-                    print(f"sync in dir {p}: {f}")
-                    sync(f)
+                    # check if f in sync list
+                    if f in origins:
+                        fs.sync(f)
             else:
-                print(f"sync: {p}")
-                sync(p)
+                fs.sync(p)
 
     else:
         typer.secho("No file input")
@@ -74,7 +75,7 @@ def list(
     all: bool = typer.Option(False, "--all", "-A", help="Show list of all add files"),
     ):
     """
-    Show all files to synchronize
+    Show files in synchronize list
     """
     fs = FileSync()
     if all:
