@@ -65,6 +65,40 @@ def sync(
         typer.secho("No file input")
 
 @app.command()
+def update(
+    path_list: Optional[List[Path]] = typer.Argument(
+        None,
+        exists=True,
+        file_okay=True,
+        readable=True,
+        resolve_path=True,
+        help="Path to origin",
+    ),
+    all: bool = typer.Option(False, "--all", "-A", help="Update all added files"),
+    ):
+    """
+    Update statuses of added files
+    """
+    fs = FileSync()
+    if all:
+        print("Update statuses all added files")
+        fs.update_hashes()
+
+    elif path_list:
+        print(f"Update statuses added files in path")
+        for p in path_list:
+            if p.is_dir():
+                origins: List[Path] = fs.get_origins()
+                for f in p.iterdir():
+                    # check if f in sync list
+                    if f in origins:
+                        fs.set_copies_hashes(f)
+            else:
+                fs.set_copies_hashes(p)
+    else:
+        typer.secho("No file input")
+
+@app.command()
 def list(
     path: Optional[List[Path]] = typer.Argument(
         None,
