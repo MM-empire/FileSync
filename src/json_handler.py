@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 from exceptions import CopyDoesNotExistsError, \
-        OriginDoesNotExistsError
+        OriginDoesNotExistsError, FileIsNotJsonError
 
 
 class JsonHandler():
@@ -20,7 +20,7 @@ class JsonHandler():
     @path.setter
     def path(self, path: Path) -> None:
         if not str(path).endswith('.json'):
-            raise FileNotFoundError
+            raise FileIsNotJsonError
         self.__path = path
     
     def read(self) -> Dict[str, Any]:
@@ -133,10 +133,9 @@ class JsonHandler():
 def main() -> None:
     jh = JsonHandler(Path('store.json'))
     jh.add_origin(Path('file.file'))
-    # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
-    # jh.add_copy(Path('file1.txt'), Path('file3.txt'))
-    jh.add_copy()
-    print(jh.exists_copy(Path('file.file'), Path('test-dir/file.file')))
+    jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
+    jh.add_copy(Path('file.file'), Path('file3.txt'))
+    print(jh.exists_copy(Path('file.file'), Path('file3.txt')))
     # print(jh.read())
 
 

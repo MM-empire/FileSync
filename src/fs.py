@@ -15,7 +15,7 @@ from pathlib import Path
 from typing import Optional, List
 import typer
 
-from file_syinc import FileSync
+from file_sync import FileSync
 from json_handler import JsonHandler
 
 
