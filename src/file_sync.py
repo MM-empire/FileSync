@@ -111,10 +111,6 @@ class FileSync():
         self.__update_copies()
 
         for p in self.__json_handler.get_copies(origin):
-<<<<<<< HEAD
-            print(f"origin: {origin}, sync: {p}")
-=======
->>>>>>> 3dec19c (Fix sync function)
             shutil_copy(origin, str(p))
             
         self.update_all_hashes()
