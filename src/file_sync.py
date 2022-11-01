@@ -18,7 +18,7 @@ class FileSync():
     File Sync class that allaw to:
         - add
         - delete
-        - syn
+        - sync
     """
     def __init__(self, path: Path=Path('store.json')) -> None:
         self.__json_handler = JsonHandler(path)
