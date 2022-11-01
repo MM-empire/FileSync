@@ -15,7 +15,7 @@ from file_sync import FileSync
 from json_handler import JsonHandler
 
 
-app = typer.Typer()
+app = typer.Typer(help="File Sync allaw you to synchronize files in different directories")
 
 @app.command()
 def add(
@@ -37,6 +37,7 @@ def sync(
         file_okay=True,
         readable=True,
         resolve_path=True,
+        help="Path to origin",
     ),
     all: bool = typer.Option(False, "--all", "-A", help="Synchronize all added files"),
     ):
