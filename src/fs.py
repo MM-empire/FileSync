@@ -31,7 +31,7 @@ def add(
 
 @app.command()
 def sync(
-    path: Optional[List[Path]] = typer.Argument(
+    path_list: Optional[List[Path]] = typer.Argument(
         None,
         exists=True,
         file_okay=True,
@@ -48,9 +48,9 @@ def sync(
         print("Sync all added files")
         fs.sync_all()
 
-    elif path:
+    elif path_list:
         print(f"Sync added files in path")
-        for p in path:
+        for p in path_list:
             if p.is_dir():
                 for f in p.iterdir():
                     print(f"sync in dir {p}: {f}")
