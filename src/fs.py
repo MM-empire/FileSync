@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 """
 TODO:
+<<<<<<< HEAD
     1. refactor sync
         1) detect and sync files or directories
         2) remove -D flag
 
     2. add list functionality
+=======
+    1. add list functionality
+>>>>>>> f6a7f9199907c3e81e9ed967229833dc0f3c9d38
         1) all by default
         2) --current-dir, -C 
         3) paths
@@ -35,7 +39,7 @@ def add(
 
 @app.command()
 def sync(
-    path: Optional[List[Path]] = typer.Argument(
+    path_list: Optional[List[Path]] = typer.Argument(
         None,
         exists=True,
         file_okay=True,
@@ -55,6 +59,9 @@ def sync(
     elif path:
         print(f"Sync added files in path")
         for p in path:
+    elif path_list:
+        print(f"Sync added files in path")
+        for p in path_list:
             if p.is_dir():
                 for f in p.iterdir():
                     print(f"sync in dir {p}: {f}")

@@ -136,6 +136,10 @@ def main() -> None:
     jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
     jh.add_copy(Path('file.file'), Path('file3.txt'))
     print(jh.exists_copy(Path('file.file'), Path('file3.txt')))
+    # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
+    # jh.add_copy(Path('file1.txt'), Path('file3.txt'))
+    jh.add_copy()
+    print(jh.exists_copy(Path('file.file'), Path('test-dir/file.file')))
     # print(jh.read())
 
 
