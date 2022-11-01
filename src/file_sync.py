@@ -117,6 +117,14 @@ class FileSync():
         origin = origin.resolve()
         return self.__json_handler.get_copies(origin)
 
+    def compare_hashes(self, origin: Path, copy: Path) -> bool:
+        """
+        Return True if hashes are the same
+        Return False if hashes are different
+        """
+        # TODO: wrap exception
+        return self.__json_handler.compare_hashes(origin, copy)
+
     def __set_origin_hash(self, origin: Path) -> None:
         """
         Set hash for origin

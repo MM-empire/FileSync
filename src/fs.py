@@ -81,9 +81,15 @@ def list(
     if all:
         print("Show all added files")
         for origin in fs.get_origins():
+            print()
             print(origin)
             for copy in fs.get_copies(origin):
-                print(f"--- {copy}")
+                state: str = '-'
+                if not fs.compare_hashes(origin, copy):
+                    # changed
+                    state = 'c'
+
+                print(f"-{state}- {copy}")
 
     elif path:
         print("Show added files")

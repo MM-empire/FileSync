@@ -129,6 +129,17 @@ class JsonHandler():
         
         return copies_list
 
+    def compare_hashes(self, origin: Path, copy: Path) -> bool:
+        """
+        Return True if hashes are the same
+        Return False if hashes are different
+        """
+        self.check_existing(origin, copy)
+        data: Dict[str, Any] = self.read()
+        origin_str: str = str(origin)
+        copy_str: str = str(copy)
+        return data[origin_str]['metadata']['hash'] == data[origin_str]['copies'][copy_str]['hash']
+
 
 def main() -> None:
     jh = JsonHandler(Path('store.json'))
