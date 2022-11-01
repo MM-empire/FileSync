@@ -8,11 +8,12 @@ class HashHandler():
     @staticmethod
     def __byte_read_file(path: Path) -> bytes:
         with open(str(path), 'rb') as file:
+
             return file.read()
 
     @staticmethod
     def calculate_hash(path: Path, algorithm: str='sha1') -> str:
-        buf: bytes = HashHandler.__byte_readFile(path)
+        buf: bytes = HashHandler.__byte_read_file(path)
         hasher = new(algorithm)
         hasher.update(buf)
         hash_hex = hasher.hexdigest()
