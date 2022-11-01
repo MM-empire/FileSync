@@ -118,6 +118,9 @@ class FileSync():
         return self.__json_handler.get_copies(origin)
 
     def __set_origin_hash(self, origin: Path) -> None:
+        """
+        Set hash for origin
+        """
         self.__json_handler.check_existing(origin)
         _hash: str = HashHandler.calculate_hash(origin)
         data: Dict[str, Any] = self.__json_handler.read()
@@ -125,6 +128,9 @@ class FileSync():
         self.__json_handler.write(data)
 
     def __set_copy_hash(self, origin: Path, copy: Optional[Path]) -> None:
+        """
+        Set hash for copy of origin
+        """
         self.__json_handler.check_existing(origin, copy)
         _hash: str = HashHandler.calculate_hash(copy)
         data: Dict[str, Any] = self.__json_handler.read()
@@ -132,12 +138,18 @@ class FileSync():
         self.__json_handler.write(data)
 
     def __set_origins_hashes(self) -> None:
+        """
+        Set hashes for all origins
+        """
         origins: List[Path] = self.__json_handler.get_origins()
         origin: Path
         for origin in origins:
             self.__set_origin_hash(origin)
         
     def __update_statuses(self) -> None:
+        """
+        Set 'changed' flag True for all origins if they are different for current origins
+        """
         data: Dict[str, Any] = self.__json_handler.read()
         for origin in data:
             _hash_origin: str = HashHandler.calculate_hash(Path(origin))
@@ -155,6 +167,9 @@ class FileSync():
         self.__json_handler.write(data)
 
     def __update_copies(self) -> None:
+        """
+        Copy changed origins to all its copy
+        """
         changed_origins: List[Path] = self.__json_handler.get_changed_origins()
         origin: Path
         copy: Path
@@ -163,6 +178,9 @@ class FileSync():
                 shutil_copy(str(origin), str(copy))
 
     def __create_file(self, path: str):
+        """
+        Create file if it does not exsists
+        """
         if not Path(path).is_file():
             with open(path, 'x') as f:
                 pass
