@@ -13,11 +13,16 @@ class OriginDoesNotExistsError(Exception):
         message: str = f'"{str(origin)}" is not in origins.'
         super().__init__(message)
 
+class FileIsNotJsonError(Exception):
+    def __init__(self, path: Path):
+        message: str = f'"{str(path)}" is not .json file.'
+        super().__init__(message)
+
 
 def main() -> None:
     origin = Path('origin/samples/origin.py')
     copy = Path('copies/copy.py')
-    raise CopyDoesNotExistsError(origin, copy)
+    raise FileIsNotJsonError(copy)
 
 if __name__ == '__main__':
     main()

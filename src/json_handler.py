@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, Any, List, Optional
 
 from exceptions import CopyDoesNotExistsError, \
-        OriginDoesNotExistsError
+        OriginDoesNotExistsError, FileIsNotJsonError
 
 
 class JsonHandler():
@@ -20,7 +20,7 @@ class JsonHandler():
     @path.setter
     def path(self, path: Path) -> None:
         if not str(path).endswith('.json'):
-            raise FileNotFoundError
+            raise FileIsNotJsonError
         self.__path = path
     
     def read(self) -> Dict[str, Any]:
@@ -55,8 +55,8 @@ class JsonHandler():
 
     def add_origin(self, origin: Path) -> None:
         if not self.exists_origin(origin):
-            origin_dict: Dict[str, Any] = {str(origin): {'metadata': \
-                    {'hash': None, 'changed': True}, 'copies': {}}}
+            origin_dict: Dict[str, Any] = {str(origin): \
+                    {'hash': None, 'copies': {}}}
             data: Dict[str, Any] = self.read()
             data.update(origin_dict)
             self.write(data)
@@ -89,43 +89,46 @@ class JsonHandler():
         data[str(origin)]['copies'].__delitem__(str(copy))
         self.write(data)
 
-    def get_changed_origins(self) -> List[Path]:
+    def get_all_changed_origins(self) -> List[Path]:
         data: Dict[str, Any] = self.read()
-        changed_origins: List[Path] = [Path(path) for path in
-                data if data[path]['metadata']['changed'] == True]
+        all_changed_origins: List[Path] = []
+        origin: Path
+        for origin in self.get_origins():
+            copies = self.get_copies(origin)
+            is_changed: bool = False
+            for copy in copies:
+                if data[str(origin)]['hash'] != data[str(origin)]['copies'][str(copy)]['hash']:
+                    is_changed = True
 
-        return changed_origins
+            if is_changed:
+                all_changed_origins.append(origin)
 
-    def get_all_changed_copies(self):
+        return all_changed_origins
+
+    def get_all_changed_copies(self) -> List[Path]:
         """
         Return list with origin paths and all copies paths
         With a structure [origin, [copy]]
         """
-        data: Dict[str, Any] = self.read()
-        changed_copies: List[Path] = []
-        for origin in data:
-            copies_list: List[Path] = []
-            flag_changed = False
-            for copy in data[origin]['copies']:
-                if data[origin]['metadata']['hash'] != data[origin]['copies'][copy]['hash']:
-                    copies_list.append(Path(copy))
-                    flag_changed = True
-            if flag_changed:
-                changed_copies.append([Path(origin), copies_list])
+        origins: List[Path] = self.get_origins()
+        all_changed_copies: List[Path] = []
+        origin: Path
+        for origin in origins:
+            all_changed_copies.extend(self.get_changed_copies(origin))
         
-        return changed_copies
+        return all_changed_copies
 
-    def get_changed_copies(self, origin: Path):
+    def get_changed_copies(self, origin: Path) -> List[Path]:
         """
         Return list of all copies paths of this origin
         With a structure [copy]
         """
         data: Dict[str, Any] = self.read()
-        origin = self.get_copies(origin)
+        copies: List[Path] = self.get_copies(origin)
         copies_list: List[Path] = []
-        for copy in data[origin]['copies']:
-            if data[origin]['metadata']['hash'] != data[origin]['copies'][copy]['hash']:
-                copies_list.append(Path(copy))
+        for copy in copies:
+            if data[str(origin)]['hash'] != data[str(origin)]['copies'][str(copy)]['hash']:
+                copies_list.append(copy)
         
         return copies_list
 
@@ -133,11 +136,14 @@ class JsonHandler():
 def main() -> None:
     jh = JsonHandler(Path('store.json'))
     jh.add_origin(Path('file.file'))
-    # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
-    # jh.add_copy(Path('file1.txt'), Path('file3.txt'))
-    jh.add_copy()
+    jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
+    jh.add_copy(Path('file.file'), Path('file3.txt'))
+    print(jh.exists_copy(Path('file.file'), Path('file3.txt')))
+    jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
+    jh.add_copy(Path('file.file'), Path('file3.txt'))
+    jh.get_changed_copies('file.file')
+    jh.get_all_changed_copies()
     print(jh.exists_copy(Path('file.file'), Path('test-dir/file.file')))
-    # print(jh.read())
 
 
 if __name__ == '__main__':
