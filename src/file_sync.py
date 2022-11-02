@@ -28,8 +28,8 @@ class FileSync():
                     r'/.config/filesync/synclist.json')
             if not path.exists():
                 self.__create_file(path)
-            with open(str(path), 'w') as f:
-                f.write('{}')
+                with open(str(path), 'w') as f:
+                    f.write('{}')
 
         self.__json_handler = JsonHandler(path)
 
@@ -178,7 +178,7 @@ class FileSync():
         self.__json_handler.write(data)
 
     def __unset_changed_origins(self) -> None:
-        changed_origins: List[Path] = self.__json_handler.get_changed_origins()
+        changed_origins: List[Path] = self.__json_handler.get_all_changed_copies()
         data: Dict[str, Any] = self.__json_handler.read()
         origin: Path
         for origin in changed_origins:
@@ -189,7 +189,7 @@ class FileSync():
         """
         Copy changed origins to all its copy
         """
-        changed_origins: List[Path] = self.__json_handler.get_changed_origins()
+        changed_origins: List[Path] = self.__json_handler.get_all_changed_copies()
         origin: Path
         copy: Path
         for origin in changed_origins:
@@ -200,9 +200,9 @@ class FileSync():
         """
         Create file if it does not exsists
         """
-        if not Path(path).is_file():
-            with open(path, 'x') as f:
-                pass
+        foldiers: Path = Path('/'.join(path.parts[:-1]))
+        foldiers.mkdir(parents=True, exist_ok=True)
+        path.touch()
 
 
 def main() -> None:
