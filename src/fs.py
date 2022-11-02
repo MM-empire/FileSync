@@ -56,6 +56,7 @@ def sync(
     elif path:
         print(f"Sync added files in path")
         for p in path:
+            fs.sync(p)
     elif path_list:
         print(f"Sync added files in path")
         for p in path_list:
