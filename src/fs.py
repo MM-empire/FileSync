@@ -9,6 +9,12 @@ TODO:
         1) all by default
         2) --current-dir, -C
         3) paths
+    2. add update func
+    3. fix sync func 
+        1) add exception
+    4. fix list func
+
+
 """
 
 from pathlib import Path
