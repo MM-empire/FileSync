@@ -12,7 +12,7 @@ class HashHandler():
             return file.read()
 
     @staticmethod
-    def calculate_hash(path: Path, algorithm: str='sha1') -> str:
+    def calculate_hash(path: Path, algorithm: str = 'sha1') -> str:
         buf: bytes = HashHandler.__byte_read_file(path)
         hasher = new(algorithm)
         hasher.update(buf)
@@ -28,6 +28,7 @@ def main() -> None:
     TODO:
     1. Check if compare file is exists
     """
+
 
 if __name__ == "__main__":
     main()

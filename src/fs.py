@@ -7,7 +7,7 @@ TODO:
 
     2. add list functionality
         1) all by default
-        2) --current-dir, -C 
+        2) --current-dir, -C
         3) paths
 """
 
@@ -16,22 +16,25 @@ from typing import Optional, List
 import typer
 
 from file_sync import FileSync
-from json_handler import JsonHandler
+# from json_handler import JsonHandler
 
 
 app = typer.Typer(help="File Sync allaw you to synchronize files in different directories")
 
+
 @app.command()
 def add(
-        origin: Path = typer.Argument(..., help="Origin file path"),
-        destination: Optional[List[Path]] = typer.Argument(..., help="Destination file path")
-    ):
+        origin: Path = typer.Argument(...,
+                                      help="Origin file path"),
+        destination: Optional[List[Path]] = typer.Argument(...,
+                                                           help="Destination file path")):
     """
     Add files to synchronize list
     """
     print(f"Add origin:{origin}, destination:{destination}")
     fs = FileSync()
     fs.add(origin, destination)
+
 
 @app.command()
 def sync(
@@ -43,8 +46,11 @@ def sync(
         resolve_path=True,
         help="Path to origin",
     ),
-    all: bool = typer.Option(False, "--all", "-A", help="Synchronize all added files"),
-    ):
+    all: bool = typer.Option(False,
+                             "--all",
+                             "-A",
+                             help="Synchronize all added files"
+                             )):
     """
     Synchronize added files
     """
@@ -53,12 +59,8 @@ def sync(
         print("Sync all added files")
         fs.sync_all()
 
-    elif path:
-        print(f"Sync added files in path")
-        for p in path:
-            fs.sync(p)
     elif path_list:
-        print(f"Sync added files in path")
+        print("Sync added files in path")
         for p in path_list:
             if p.is_dir():
                 origins: List[Path] = fs.get_origins()
@@ -72,6 +74,7 @@ def sync(
     else:
         typer.secho("No file input")
 
+
 @app.command()
 def update(
     path_list: Optional[List[Path]] = typer.Argument(
@@ -82,18 +85,21 @@ def update(
         resolve_path=True,
         help="Path to origin",
     ),
-    all: bool = typer.Option(False, "--all", "-A", help="Update all added files"),
-    ):
+    all: bool = typer.Option(False,
+                             "--all",
+                             "-A",
+                             help="Update all added files"
+                             )):
     """
     Update statuses of added files
     """
     fs = FileSync()
     if all:
         print("Update statuses all added files")
-        fs.update_hashes()
+        fs.update_all_hashes()
 
     elif path_list:
-        print(f"Update statuses added files in path")
+        print("Update statuses added files in path")
         for p in path_list:
             if p.is_dir():
                 origins: List[Path] = fs.get_origins()
@@ -106,6 +112,7 @@ def update(
     else:
         typer.secho("No file input")
 
+
 @app.command()
 def list(
     path: Optional[List[Path]] = typer.Argument(
@@ -115,8 +122,10 @@ def list(
         readable=True,
         resolve_path=True,
         help="Path to synchronize list"),
-    all: bool = typer.Option(False, "--all", "-A", help="Show list of all add files"),
-    ):
+    all: bool = typer.Option(False,
+                             "--all",
+                             "-A",
+                             help="Show list of all add files")):
     """
     Show files in synchronize list
     """
