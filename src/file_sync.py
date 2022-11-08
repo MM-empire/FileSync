@@ -21,11 +21,10 @@ class FileSync():
         - delete
         - sync
     """
-    # Make more beautiful __init__
-    def __init__(self, path: Optional[Path]=None) -> None:
+    # TODO: Make more beautiful __init__
+    def __init__(self, path: Optional[Path] = None) -> None:
         if not path:
-            path: Path = Path(environ['HOME'] + \
-                    r'/.config/filesync/synclist.json')
+            path: Path = Path(environ['HOME'] + r'/.config/filesync/synclist.json')
             if not path.exists():
                 self.__create_file(path)
                 with open(str(path), 'w') as f:
@@ -46,7 +45,7 @@ class FileSync():
             copy = copy.resolve()
             self.__json_handler.add_copy(origin, copy)
             if copy.is_file():
-               self.__set_copy_hash(origin, copy)
+                self.__set_copy_hash(origin, copy)
 
     # set mapping for *copies
     def delete(self, origin: Path, *copies: List[Path]) -> None:
@@ -176,11 +175,11 @@ class FileSync():
             for copy in self.__json_handler.get_copies(origin):
                 shutil_copy(str(origin), str(copy))
 
-    def __create_file(self, path: str):
+    def __create_file(self, path: Path):
         """
         Create file if it does not exsists
         """
-        foldiers: Path = Path('/'.join(path.parts[:-1]))
+        foldiers: Path = path.parent
         foldiers.mkdir(parents=True, exist_ok=True)
         path.touch()
 
@@ -192,8 +191,8 @@ def main() -> None:
     fs = FileSync()
     fs.add(origin, [copy1, copy2])
     fs.sync_all()
-    #for o in fs.get_origins():
-        #print(fs.get_copies(o))
+    # for o in fs.get_origins():
+        # print(fs.get_copies(o))
     # print(fs.list_all())
     # print(type(origin))
     # print(origin)
