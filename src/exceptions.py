@@ -8,10 +8,12 @@ class CopyDoesNotExistsError(Exception):
         message: str = f'"{str(copy)}" is not in copies of "{str(origin)}".'
         super().__init__(message)
 
+
 class OriginDoesNotExistsError(Exception):
     def __init__(self, origin: Path):
         message: str = f'"{str(origin)}" is not in origins.'
         super().__init__(message)
+
 
 class FileIsNotJsonError(Exception):
     def __init__(self, path: Path):
@@ -23,6 +25,7 @@ def main() -> None:
     origin = Path('origin/samples/origin.py')
     copy = Path('copies/copy.py')
     raise FileIsNotJsonError(copy)
+
 
 if __name__ == '__main__':
     main()

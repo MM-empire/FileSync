@@ -19,7 +19,7 @@ class FileSync():
     File Sync class that allaw to:
         - add
         - delete
-        - syn
+        - sync
     """
     # Make more beautiful __init__
     def __init__(self, path: Optional[Path]=None) -> None:
@@ -28,8 +28,8 @@ class FileSync():
                     r'/.config/filesync/synclist.json')
             if not path.exists():
                 self.__create_file(path)
-            with open(str(path), 'w') as f:
-                f.write('{}')
+                with open(str(path), 'w') as f:
+                    f.write('{}')
 
         self.__json_handler = JsonHandler(path)
 
@@ -96,10 +96,9 @@ class FileSync():
         self.__update_copies()
 
         changed: [Path, List[Path]]
-        for origin in self.__json_handler.get_all_changed_origins():
-            for copy in self.__json_handler.get_changed_copies(origin):
-                print(f"Update: {str(origin)} {str(copy)}")
-                shutil_copy(str(origin), str(copy))
+        for changed in self.__json_handler.get_all_changed_copies():
+            for copy in changed[1]:
+                shutil_copy(str(changed[0]), str(copy))
 
         self.update_all_hashes()
 
@@ -112,9 +111,8 @@ class FileSync():
         self.__update_copies()
 
         for p in self.__json_handler.get_copies(origin):
-            print(f"origin: {origin}, sync: {p}")
-            shutil_copy(origin, src(p))
-            
+            shutil_copy(origin, str(p))
+
         self.update_all_hashes()
 
     def get_origins(self) -> List[Path]:
@@ -130,7 +128,18 @@ class FileSync():
         origin = origin.resolve()
         return self.__json_handler.get_copies(origin)
 
+    def compare_hashes(self, origin: Path, copy: Path) -> bool:
+        """
+        Return True if hashes are the same
+        Return False if hashes are different
+        """
+        # TODO: wrap exception
+        return self.__json_handler.compare_hashes(origin, copy)
+
     def __set_origin_hash(self, origin: Path) -> None:
+        """
+        Set hash for origin
+        """
         self.__json_handler.check_existing(origin)
         _hash: str = HashHandler.calculate_hash(origin)
         data: Dict[str, Any] = self.__json_handler.read()
@@ -138,6 +147,9 @@ class FileSync():
         self.__json_handler.write(data)
 
     def __set_copy_hash(self, origin: Path, copy: Optional[Path]) -> None:
+        """
+        Set hash for copy of origin
+        """
         self.__json_handler.check_existing(origin, copy)
         _hash: str = HashHandler.calculate_hash(copy)
         data: Dict[str, Any] = self.__json_handler.read()
@@ -145,12 +157,18 @@ class FileSync():
         self.__json_handler.write(data)
 
     def __set_origins_hashes(self) -> None:
+        """
+        Set hashes for all origins
+        """
         origins: List[Path] = self.__json_handler.get_origins()
         origin: Path
         for origin in origins:
             self.__set_origin_hash(origin)
 
     def __update_copies(self) -> None:
+        """
+        Copy changed origins to all its copy
+        """
         changed_origins: List[Path] = self.__json_handler.get_all_changed_origins()
         origin: Path
         copy: Path
@@ -158,7 +176,10 @@ class FileSync():
             for copy in self.__json_handler.get_copies(origin):
                 shutil_copy(str(origin), str(copy))
 
-    def __create_file(self, path: Path):
+    def __create_file(self, path: str):
+        """
+        Create file if it does not exsists
+        """
         foldiers: Path = Path('/'.join(path.parts[:-1]))
         foldiers.mkdir(parents=True, exist_ok=True)
         path.touch()

@@ -22,7 +22,7 @@ class JsonHandler():
         if not str(path).endswith('.json'):
             raise FileIsNotJsonError
         self.__path = path
-    
+
     def read(self) -> Dict[str, Any]:
         with open(str(self.path), 'r') as file:
             return load(file)
@@ -46,7 +46,7 @@ class JsonHandler():
             return True
         return False
 
-    def check_existing(self, origin: Path, copy: Optional[Path]=None):
+    def check_existing(self, origin: Path, copy: Optional[Path] = None):
         if not self.exists_origin(origin):
             raise OriginDoesNotExistsError(origin)
         if copy and not self.exists_copy(origin, copy):
@@ -55,12 +55,15 @@ class JsonHandler():
 
     def add_origin(self, origin: Path) -> None:
         if not self.exists_origin(origin):
-            origin_dict: Dict[str, Any] = {str(origin): \
-                    {'hash': None, 'copies': {}}}
+            origin_dict: Dict[str, Any] = {
+                str(origin): {
+                    'hash': None,
+                    'copies': {}}
+            }
             data: Dict[str, Any] = self.read()
             data.update(origin_dict)
             self.write(data)
-        
+
     def add_copy(self, origin: Path, copy: Path) -> None:
         self.check_existing(origin)
         if not self.exists_copy(origin, copy):
@@ -97,7 +100,8 @@ class JsonHandler():
             copies = self.get_copies(origin)
             is_changed: bool = False
             for copy in copies:
-                if data[str(origin)]['hash'] != data[str(origin)]['copies'][str(copy)]['hash']:
+                if data[str(origin)]['hash'] != \
+                        data[str(origin)]['copies'][str(copy)]['hash']:
                     is_changed = True
 
             if is_changed:
@@ -115,7 +119,7 @@ class JsonHandler():
         origin: Path
         for origin in origins:
             all_changed_copies.extend(self.get_changed_copies(origin))
-        
+
         return all_changed_copies
 
     def get_changed_copies(self, origin: Path) -> List[Path]:
@@ -127,9 +131,10 @@ class JsonHandler():
         copies: List[Path] = self.get_copies(origin)
         copies_list: List[Path] = []
         for copy in copies:
-            if data[str(origin)]['hash'] != data[str(origin)]['copies'][str(copy)]['hash']:
+            if data[str(origin)]['hash'] != \
+                    data[str(origin)]['copies'][str(copy)]['hash']:
                 copies_list.append(copy)
-        
+
         return copies_list
 
     def compare_hashes(self, origin: Path, copy: Path) -> bool:
@@ -141,20 +146,23 @@ class JsonHandler():
         data: Dict[str, Any] = self.read()
         origin_str: str = str(origin)
         copy_str: str = str(copy)
-        return data[origin_str]['metadata']['hash'] == data[origin_str]['copies'][copy_str]['hash']
+        return data[origin_str]['hash'] == \
+            data[origin_str]['copies'][copy_str]['hash']
 
 
 def main() -> None:
-    jh = JsonHandler(Path('store.json'))
-    jh.add_origin(Path('file.file'))
-    jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
-    jh.add_copy(Path('file.file'), Path('file3.txt'))
-    print(jh.exists_copy(Path('file.file'), Path('file3.txt')))
-    jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
-    jh.add_copy(Path('file.file'), Path('file3.txt'))
-    jh.get_changed_copies('file.file')
-    jh.get_all_changed_copies()
-    print(jh.exists_copy(Path('file.file'), Path('test-dir/file.file')))
+    jh = JsonHandler(Path('synclist.json'))
+    # jh.add_origin(Path('file.file'))
+    # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
+    # jh.add_copy(Path('file.file'), Path('file3.txt'))
+    # print(jh.exists_copy(Path('file.file'), Path('file3.txt')))
+    # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
+    # jh.add_copy(Path('file.file'), Path('file3.txt'))
+    # jh.get_changed_copies('file.file')
+    # jh.get_all_changed_copies()
+    # print(jh.exists_copy(Path('file.file'), Path('test-dir/file.file')))
+    # print(jh.get_copies("/home/mikhail/repos/FileSync/src/file.file"))
+    print(jh.get_all_changed_origins)
 
 
 if __name__ == '__main__':
