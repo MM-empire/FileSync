@@ -164,26 +164,6 @@ class FileSync():
         origin: Path
         for origin in origins:
             self.__set_origin_hash(origin)
-        
-    def __update_statuses(self) -> None:
-        """
-        Set 'changed' flag True for all origins if they are different for current origins
-        """
-        data: Dict[str, Any] = self.__json_handler.read()
-        for origin in data:
-            _hash_origin: str = HashHandler.calculate_hash(Path(origin))
-            if data[origin]['metadata']['hash'] != _hash_origin:
-                data[origin]['metadata']['changed'] = True
-
-        self.__json_handler.write(data)
-
-    def __unset_changed_origins(self) -> None:
-        changed_origins: List[Path] = self.__json_handler.get_all_changed_copies()
-        data: Dict[str, Any] = self.__json_handler.read()
-        origin: Path
-        for origin in changed_origins:
-            data[str(origin)]['metadata']['changed'] = False
-        self.__json_handler.write(data)
 
     def __update_copies(self) -> None:
         """
