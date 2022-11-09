@@ -5,9 +5,9 @@ from unittest import TestCase, main
 from json_handler import JsonHandler
 from typing import Dict, Any, List
 
+
 class JsonHandlerTestCase(TestCase):
     """Tests for JsonHandler"""
-
 
     def test_check_get_path(self):
         path: Path = Path('testdata.json')
@@ -44,6 +44,15 @@ class JsonHandlerTestCase(TestCase):
         origins: List[Path] = [testfile1]
         _origins: List[Path] = jh.get_origins()
         self.assertEqual(origins, _origins)
+
+    def test_check_get_copies(self):
+        path: Path = Path('testdata.json')
+        jh: JsonHandler = JsonHandler(path)
+        testfile1: Path = Path('testfile1.file')
+        testfile2: Path = Path('testfile2.file')
+        copies: List[Path] = [testfile2]
+        _copies: List[Path] = jh.get_copies(testfile1)
+        self.assertEqual(copies, _copies)
 
 
 if __name__ == '__main__':

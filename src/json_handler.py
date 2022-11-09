@@ -50,7 +50,6 @@ class JsonHandler():
         if not self.exists_origin(origin):
             raise OriginDoesNotExistsError(origin)
         if copy and not self.exists_copy(origin, copy):
-            # print(str(copy))
             raise CopyDoesNotExistsError(origin, copy)
 
     def add_origin(self, origin: Path) -> None:
