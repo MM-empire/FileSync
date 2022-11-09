@@ -1,0 +1,10 @@
+{
+    "testfile1.file": {
+        "hash": null,
+        "copies": {
+            "testfile2.file": {
+                "hash": null
+            }
+        }
+    }
+}
