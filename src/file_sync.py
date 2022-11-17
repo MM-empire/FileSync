@@ -94,10 +94,9 @@ class FileSync():
         self.update_all_hashes()
         self.__update_copies()
 
-        changed: [Path, List[Path]]
-        for changed in self.__json_handler.get_all_changed_copies():
-            for copy in changed[1]:
-                shutil_copy(str(changed[0]), str(copy))
+        for origin in self.__json_handler.get_origins():
+            for copy in self.__json_handler.get_changed_copies(origin):
+                shutil_copy(str(origin), str(copy))
 
         self.update_all_hashes()
 
