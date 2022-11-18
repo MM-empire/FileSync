@@ -8,13 +8,13 @@ from exceptions import CopyDoesNotExistsError, \
 
 
 class JsonHandler():
-    def __init__(self, path: Path) -> None:
-        self.path: Path = path
-        if not path.exists():
+    def __init__(self, path: str) -> None:
+        self.__path: str = path
+        if not exists(path):
             self.write({})
 
     @property
-    def path(self) -> Path:
+    def path(self) -> str:
         return self.__path
 
     @path.setter
@@ -24,14 +24,15 @@ class JsonHandler():
         self.__path = path
 
     def read(self) -> Dict[str, Any]:
-        with open(str(self.path), 'r') as file:
-            return load(file)
+        with open(self.path, 'r') as file:
+            data: Dict[str, Any] = load(file)
+        return data
 
     def write(self, data: Dict[str, Any]) -> None:
-        with open(str(self.path), 'w') as file:
+        with open(self.path, 'w') as file:
             dump(data, file, indent=4)
 
-    def exists_origin(self, origin: Path) -> bool:
+    def add_origin(self, origin_path: str) -> None:
         data: Dict[str, Any] = self.read()
         if data.get(str(origin)):
             return True
@@ -74,7 +75,9 @@ class JsonHandler():
 
     def get_origins(self) -> List[Path]:
         data: Dict[str, Any] = self.read()
-        return [Path(path) for path in data.keys()]
+        copy_dict: Dict[str, Dict[str, None]] = {copy_path: {'hash': None}}
+        data[origin_path]['copies'].update(copy_dict)
+        self.write(data);
 
     def get_copies(self, origin: Path) -> List[Path]:
         self.check_existing(origin)
