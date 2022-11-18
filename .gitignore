@@ -72,8 +72,5 @@ Thumbs.db
 *.exe
 
 venv/
-.venv/
-env/
-.env/
 .vim/
 *.vim

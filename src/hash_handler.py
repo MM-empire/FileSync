@@ -38,10 +38,12 @@ class HashHandler():
         with open(path, 'rb') as file:
             return file.read()
 
-    @staticmethod
-    def calculate_hash(path: Path, algorithm: str = 'sha1') -> str:
-        buf: bytes = HashHandler.__byte_read_file(path)
-        hasher = new(algorithm)
+    def __calculateHash(self, path: str = '') -> str:
+        if (path == ''):
+            path = self.__path
+
+        buf: bytes = self.__byteReadFile(path)
+        hasher = sha1()
         hasher.update(buf)
         hash_hex = hasher.hexdigest()
         return hash_hex
@@ -60,7 +62,6 @@ def main() -> None:
     TODO:
     1. Check if compare file is exists
     """
-
 
 if __name__ == "__main__":
     main()
