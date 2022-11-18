@@ -77,6 +77,7 @@ class JsonHandler():
         return [Path(path) for path in data.keys()]
 
     def get_copies(self, origin: Path) -> List[Path]:
+        self.check_existing(origin)
         data: Dict[str, Any] = self.read()
         return [Path(path) for path in data[str(origin)]['copies'].keys()]
 
