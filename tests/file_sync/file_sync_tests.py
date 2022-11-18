@@ -107,6 +107,16 @@ class TestFileSync(TestCase):
 
         self.assertEqual([copy.resolve() for copy in self.copies], self.fs.get_copies(self.origin))
 
+        syncList_new: Path = Path("synclist_new.json")
+        fs_new = FileSync(syncList_new)
+
+        try:
+            fs_new.get_copies(self.origin)
+        except OriginDoesNotExistsError:
+            pass
+        except Exception as e:
+            self.fail(e)
+
     # def test_compare_hashes(self):
     #     """Test compare_hashes"""
     #     new_file: Path = Path("new_file.file")
@@ -119,6 +129,16 @@ class TestFileSync(TestCase):
     #
     #     self.assertTrue(self.fs.compare_hashes(self.origin, self.copies))
         # self.assertFalse(self.fs.compare_hashes(self.origin, new_file))
+
+    def test_set_origin_hash(self):
+        """Test __set_origin_hash"""
+        self.fs.add(self.origin, self.copies)
+        self.fs.sync(self.origin)
+
+        jh = JsonHandler(self.synclist)
+        data: Dict[str, Any] = jh.read()
+        self.assertEqual(data[str(self.origin.resolve())]['hash'],
+                         HashHandler.calculate_hash(self.origin))
 
     def test_create_file(self):
         """Test __create_file"""
