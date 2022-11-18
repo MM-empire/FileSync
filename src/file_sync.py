@@ -62,7 +62,7 @@ class FileSync():
                 print(f'{str(origin)} is not in synclist')
         else:
             copy: Path
-            for copy in copies:
+            for copy in copies[0]:
                 try:
                     self.__json_handler.remove_copy(origin, copy)
                 except OriginDoesNotExistsError:
