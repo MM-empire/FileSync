@@ -3,12 +3,14 @@ from sys import path
 import os
 import shutil
 from pathlib import Path
-from typing import List
+from typing import List, Dict, Any
 from unittest import TestCase, main
 
 path.insert(0, "../../src/")
 from file_sync import FileSync
+from json_handler import JsonHandler
 from hash_handler import HashHandler
+from exceptions import OriginDoesNotExistsError
 
 
 class TestFileSync(TestCase):
@@ -71,6 +73,19 @@ class TestFileSync(TestCase):
         for copy in new_copies:
             self.assertEqual(HashHandler.calculate_hash(new_origin),
                              HashHandler.calculate_hash(copy))
+
+    def test_delete(self):
+        """Test delete"""
+        self.fs.add(self.origin, self.copies)
+        self.fs.sync(self.origin)
+        self.fs.delete(self.origin.resolve())
+
+        try:
+            self.fs.get_copies(self.origin)
+        except OriginDoesNotExistsError:
+            pass
+        except Exception as e:
+            self.fail(e)
 
     def test_get_origins(self):
         """Test get_origins"""
