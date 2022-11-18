@@ -53,6 +53,7 @@ class FileSync():
         Delete origin and its copies
         If no copies delete origin from sync list
         else delete copies of origin
+        Only remove note from synclist
         """
         if not copies:
             try:
