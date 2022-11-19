@@ -12,7 +12,6 @@ from exceptions import CopyDoesNotExistsError, \
         OriginDoesNotExistsError
 
 
-#TODO main methods: comparing, copying
 #TODO resolve path start with no ./
 class FileSync():
     """
@@ -21,16 +20,8 @@ class FileSync():
         - delete
         - sync
     """
-    # TODO: Make more beautiful __init__
     def __init__(self, path: Optional[Path] = None) -> None:
-        if not path:
-            path: Path = Path(environ['HOME'] + r'/.config/filesync/synclist.json')
-            if not path.exists():
-                self.__create_file(path)
-                with open(str(path), 'w') as f:
-                    f.write('{}')
-
-        self.__json_handler = JsonHandler(path)
+        self.set_synclist(path)
 
     # set mapping for *copies
     def add(self, origin: Path, copies: List[Path]) -> None:
@@ -134,6 +125,19 @@ class FileSync():
         """
         # TODO: wrap exception
         return self.__json_handler.compare_hashes(origin, copy)
+
+    def set_synclist(self, path: Path) -> None:
+        """
+        Set new sync list path
+        """
+        if not path:
+            path: Path = Path(environ['HOME'] + r'/.config/filesync/synclist.json')
+            if not path.exists():
+                self.__create_file(path)
+                with open(str(path), 'w') as f:
+                    f.write('{}')
+
+        self.__json_handler = JsonHandler(path)
 
     def __set_origin_hash(self, origin: Path) -> None:
         """
