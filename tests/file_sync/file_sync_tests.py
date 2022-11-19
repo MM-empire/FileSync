@@ -39,6 +39,14 @@ class TestFileSync(TestCase):
         os.chdir("..")
         shutil.rmtree(self.test_dir_path)
 
+    def test_add(self):
+        """Test add"""
+        self.fs.add(self.origin, self.copies)
+
+        self.assertEqual([self.origin.resolve()], self.fs.get_origins())
+        self.assertEqual([copy.resolve() for copy in self.copies],
+                         self.fs.get_copies(self.origin))
+
     def test_sync(self):
         """Test sync"""
         self.fs.add(self.origin, self.copies)
