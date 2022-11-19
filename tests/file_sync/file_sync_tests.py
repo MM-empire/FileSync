@@ -39,6 +39,14 @@ class TestFileSync(TestCase):
         os.chdir("..")
         shutil.rmtree(self.test_dir_path)
 
+    def test_add(self):
+        """Test add"""
+        self.fs.add(self.origin, self.copies)
+
+        self.assertEqual([self.origin.resolve()], self.fs.get_origins())
+        self.assertEqual([copy.resolve() for copy in self.copies],
+                         self.fs.get_copies(self.origin))
+
     def test_sync(self):
         """Test sync"""
         self.fs.add(self.origin, self.copies)
@@ -133,12 +141,48 @@ class TestFileSync(TestCase):
     def test_set_origin_hash(self):
         """Test __set_origin_hash"""
         self.fs.add(self.origin, self.copies)
+        os.remove(self.origin)
+        self.create_file(self.origin, "new content")
+
+        jh = JsonHandler(self.synclist)
+        data: Dict[str, Any] = jh.read()
+
+        self.assertNotEqual(data[str(self.origin.resolve())]['hash'],
+                         HashHandler.calculate_hash(self.origin))
+
+        self.fs._FileSync__set_origin_hash(self.origin.resolve())
+
+        data: Dict[str, Any] = jh.read()
+        self.assertEqual(data[str(self.origin.resolve())]['hash'],
+                         HashHandler.calculate_hash(self.origin))
+
+    def test_set_copy_hash(self):
+        """Test __set_copy_hash"""
+        self.fs.add(self.origin, self.copies)
         self.fs.sync(self.origin)
 
         jh = JsonHandler(self.synclist)
         data: Dict[str, Any] = jh.read()
-        self.assertEqual(data[str(self.origin.resolve())]['hash'],
-                         HashHandler.calculate_hash(self.origin))
+        for copy in self.copies:
+            self.assertEqual(data[str(self.origin.resolve())]['copies'][str(copy.resolve())]['hash'],
+                             HashHandler.calculate_hash(copy.resolve()))
+
+        for copy in self.copies:
+            os.remove(copy)
+            self.create_file(copy, "new content")
+
+        for copy in self.copies:
+            self.assertNotEqual(data[str(self.origin.resolve())]['copies'][str(copy.resolve())]['hash'],
+                             HashHandler.calculate_hash(copy.resolve()))
+
+        for copy in self.copies:
+            self.fs._FileSync__set_copy_hash(self.origin.resolve(), copy.resolve())
+
+        data: Dict[str, Any] = jh.read()
+        for copy in self.copies:
+            self.assertEqual(data[str(self.origin.resolve())]['copies'][str(copy.resolve())]['hash'],
+                             HashHandler.calculate_hash(copy.resolve()))
+
 
     def test_create_file(self):
         """Test __create_file"""
