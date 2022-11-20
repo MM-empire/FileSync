@@ -9,7 +9,7 @@ from json_handler import JsonHandler
 from hash_handler import HashHandler
 
 from exceptions import CopyDoesNotExistsError, \
-        OriginDoesNotExistsError
+        OriginDoesNotExistsError, FileIsNotJsonError
 
 
 #TODO resolve path start with no ./
@@ -137,7 +137,13 @@ class FileSync():
                 with open(str(path), 'w') as f:
                     f.write('{}')
 
-        self.__json_handler = JsonHandler(path)
+        # TODO: rewrite exceptions
+        try:
+            self.__json_handler = JsonHandler(path)
+        except FileIsNotJsonError:
+            print("error Handled")
+        except Exception as e:
+            print("Exception handled:", e)
 
     def __set_origin_hash(self, origin: Path) -> None:
         """
