@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 from unittest import TestCase, main
 
 path.insert(0, "../../src/")
-from file_sync import FileSync
+from fs_core import FileSync
 from json_handler import JsonHandler
 from hash_handler import HashHandler
 from exceptions import OriginDoesNotExistsError
@@ -137,6 +137,16 @@ class TestFileSync(TestCase):
     #
     #     self.assertTrue(self.fs.compare_hashes(self.origin, self.copies))
         # self.assertFalse(self.fs.compare_hashes(self.origin, new_file))
+
+    def test_set_synclist(self):
+        """Test set_synclist"""
+        synclist_new: Path = Path("new_synclist.json")
+        self.fs.add(self.origin, self.copies)
+        self.fs.set_synclist(synclist_new)
+        self.fs.add(self.origin, self.copies)
+
+        self.assertEqual(HashHandler.calculate_hash(self.synclist.resolve()),
+                         HashHandler.calculate_hash(synclist_new.resolve()))
 
     def test_set_origin_hash(self):
         """Test __set_origin_hash"""

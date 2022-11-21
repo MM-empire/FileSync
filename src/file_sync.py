@@ -1,208 +1,198 @@
 #!/usr/bin/env python3
-
+import sys
 from pathlib import Path
-from os import environ
-from shutil import copy as shutil_copy
-from typing import Dict, Any, List, Union, Optional
+from fs_core import FileSync
+from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem
+from PyQt6.QtWidgets import QApplication, QLineEdit, QMainWindow, QVBoxLayout, QHBoxLayout, QTreeView, QToolBar, QWidget, QMenuBar, QFileDialog, QComboBox
 
-from json_handler import JsonHandler
-from hash_handler import HashHandler
+class MainWindow(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-from exceptions import CopyDoesNotExistsError, \
-        OriginDoesNotExistsError
+        self.fs = FileSync()
+        self.refreshOrigins()
+        self.refreshCopies()
 
+        # Window params
+        self.setWindowTitle("File Sync")
 
-#TODO main methods: comparing, copying
-#TODO resolve path start with no ./
-class FileSync():
-    """
-    File Sync class that allaw to:
-        - add
-        - delete
-        - sync
-    """
-    # TODO: Make more beautiful __init__
-    def __init__(self, path: Optional[Path] = None) -> None:
-        if not path:
-            path: Path = Path(environ['HOME'] + r'/.config/filesync/synclist.json')
-            if not path.exists():
-                self.__create_file(path)
-                with open(str(path), 'w') as f:
-                    f.write('{}')
+    def initUI(self):
+        """
+        QToolBar,
+        QVBoxLayout {
+            QHBoxLayout {
+                QTreeView,
+                QTreeView
+            }
+        }
+        """
 
-        self.__json_handler = JsonHandler(path)
+        # Add toolbar
+        self.toolbar = QToolBar("toolbar")
+        self.addToolBar(self.toolbar)
 
-    # set mapping for *copies
-    def add(self, origin: Path, copies: List[Path]) -> None:
-        """
-        Add origin and its copies to sync list
-        """
-        origin = origin.resolve()
-        self.__json_handler.add_origin(origin)
-        self.__set_origin_hash(origin)
-        copy: Path
-        for copy in copies:
-            copy = copy.resolve()
-            self.__json_handler.add_copy(origin, copy)
-            if copy.is_file():
-                self.__set_copy_hash(origin, copy)
+        # add toolButton
+        self.add_tool_btn = QAction()
+        self.add_tool_btn.setText(self.tr("&Add"))
+        self.add_tool_btn.triggered.connect(self.onAddToolBtnClick)
+        self.toolbar.addAction(self.add_tool_btn)
 
-    # set mapping for *copies
-    def delete(self, origin: Path, *copies: List[Path]) -> None:
-        """
-        Delete origin and its copies
-        If no copies delete origin from sync list
-        else delete copies of origin
-        Only remove note from synclist
-        """
-        if not copies:
-            try:
-                self.__json_handler.remove_origin(origin)
-            except OriginDoesNotExistsError:
-                print(f'{str(origin)} is not in synclist')
-        else:
-            copy: Path
-            for copy in copies[0]:
-                try:
-                    self.__json_handler.remove_copy(origin, copy)
-                except OriginDoesNotExistsError:
-                    print(f'{str(origin)} is not in synclist')
-                except CopyDoesNotExistsError:
-                    print(f'{str(copy)} is not a copy of {str(origin)}')
+        # sync toolButton
+        self.sync_tool_btn = QAction()
+        self.sync_tool_btn.setText(self.tr("&Sync"))
+        self.toolbar.addAction(self.sync_tool_btn)
 
-    def set_copies_hashes(self, origin: Path) -> None:
-        """
-        Update hashs for origin copies
-        """
-        copies: List[Path] = self.__json_handler.get_copies(origin)
-        copy: Path
-        for copy in copies:
-            self.__set_copy_hash(origin, copy)
+        # sync toolButton
+        self.sync_all_tool_btn = QAction()
+        self.sync_all_tool_btn.setText(self.tr("Sync all"))
+        self.toolbar.addAction(self.sync_all_tool_btn)
 
-    def update_all_hashes(self) -> None:
-        """
-        Update hashs for all origins and their copies
-        """
-        for origin in self.get_origins():
-            for copy in self.get_copies(origin):
-                self.__create_file(copy)
-            self.set_copies_hashes(origin)
+        # delete toolButton
+        self.delete_tool_btn = QAction()
+        self.delete_tool_btn.setText(self.tr("&Delete"))
+        self.toolbar.addAction(self.delete_tool_btn)
 
-    def sync_all(self) -> None:
-        """
-        Synchronize all copies of all origins
-        """
-        self.update_all_hashes()
-        self.__update_copies()
+        # Add menu bar
+        self.menu_bar = QMenuBar()
+        self.file_menu = self.menu_bar.addMenu(self.tr("&File"))
+        # load sync list action
+        self.load_sync_list_action = QAction(self.tr("&Load sync list.."))
+        self.load_sync_list_action.triggered.connect(self.onLoadSyncListClick)
+        self.file_menu.addAction(self.load_sync_list_action)
 
-        for origin in self.__json_handler.get_origins():
-            for copy in self.__json_handler.get_changed_copies(origin):
-                shutil_copy(str(origin), str(copy))
+        self.file_menu.addSeparator()
+        self.file_menu.addAction(self.tr("&Exit"))
 
-        self.update_all_hashes()
+        self.action_menu = self.menu_bar.addMenu(self.tr("&Action"))
+        self.action_menu.addAction(self.add_tool_btn)
+        self.action_menu.addAction(self.sync_tool_btn)
+        self.action_menu.addAction(self.sync_all_tool_btn)
+        self.action_menu.addAction(self.delete_tool_btn)
 
-    def sync(self, origin: Path) -> None:
-        """
-        Synchronize copies of origin
-        """
-        origin = origin.resolve()
-        self.update_all_hashes()
-        self.__update_copies()
+        self.help_menu = self.menu_bar.addMenu(self.tr("&Help"))
+        self.help_menu.addAction(self.tr("About &File Sync"))
+        self.help_menu.addAction(self.tr("About &Qt"))
 
-        for p in self.__json_handler.get_copies(origin):
-            shutil_copy(origin, str(p))
+        self.setMenuBar(self.menu_bar)
 
-        self.update_all_hashes()
+        # Add add toolbar
+        self.toolbar_add = QToolBar("add")
+        self.addToolBar(self.toolbar_add)
 
-    def get_origins(self) -> List[Path]:
-        """
-        Return list of all origins paths
-        """
-        return [Path(origin).resolve() for origin in self.__json_handler.get_origins()]
+        # add origin browse action
+        self.add_tool_origin_action = QAction("brows")
+        self.toolbar_add.addAction(self.add_tool_origin_action)
 
-    def get_copies(self, origin: Path) -> List[Path]:
-        """
-        Return copies paths of origin
-        """
-        origin = origin.resolve()
-        return self.__json_handler.get_copies(origin)
+        # add origin path comboBox
+        self.add_tool_origin_combobox = QComboBox()
+        self.toolbar_add.addWidget(self.add_tool_origin_combobox)
 
-    def compare_hashes(self, origin: Path, copy: Path) -> bool:
-        """
-        Return True if hashes are the same
-        Return False if hashes are different
-        """
-        # TODO: wrap exception
-        return self.__json_handler.compare_hashes(origin, copy)
+        # add copy browse action
+        self.add_tool_copy_action = QAction("brows")
+        self.toolbar_add.addAction(self.add_tool_copy_action)
 
-    def __set_origin_hash(self, origin: Path) -> None:
-        """
-        Set hash for origin
-        """
-        self.__json_handler.check_existing(origin)
-        _hash: str = HashHandler.calculate_hash(origin)
-        data: Dict[str, Any] = self.__json_handler.read()
-        data[str(origin)]['hash'] = _hash
-        self.__json_handler.write(data)
+        # add copy path lineEdit
+        self.add_tool_copy_lineedit = QLineEdit()
+        self.toolbar_add.addWidget(self.add_tool_copy_lineedit)
 
-    def __set_copy_hash(self, origin: Path, copy: Optional[Path]) -> None:
-        """
-        Set hash for copy of origin
-        """
-        self.__json_handler.check_existing(origin, copy)
-        _hash: str = HashHandler.calculate_hash(copy)
-        data: Dict[str, Any] = self.__json_handler.read()
-        data[str(origin)]['copies'][str(copy)]['hash'] = _hash
-        self.__json_handler.write(data)
+        # Layouts setup
+        self.widget = QWidget(self)
+        self.main_layout = QVBoxLayout()
+        self.tree_view_layout = QHBoxLayout()
+        
+        # Add tree view for origins
+        self.origins_model = QStandardItemModel(0, 3)
+        self.origins_model.setHorizontalHeaderLabels(
+            ["Name", "Path", "state"]
+        )
+        self.tree_view_origins = QTreeView()
+        self.tree_view_origins.clicked.connect(self.onOriginTreeViewSelect)
+        self.tree_view_origins.setModel(self.origins_model)
 
-    def __set_origins_hashes(self) -> None:
-        """
-        Set hashes for all origins
-        """
-        origins: List[Path] = self.__json_handler.get_origins()
-        origin: Path
-        for origin in origins:
-            self.__set_origin_hash(origin)
+        # Add tree view for copies
+        self.copies_model = QStandardItemModel(0, 3)
+        self.copies_model.setHorizontalHeaderLabels(
+            ["Name", "Path", "state"]
+        )
+        self.tree_view_copies = QTreeView()
+        self.tree_view_copies.setModel(self.copies_model)
 
-    def __update_copies(self) -> None:
-        """
-        Copy changed origins to all its copy
-        """
-        changed_origins: List[Path] = self.__json_handler.get_all_changed_origins()
-        origin: Path
-        copy: Path
-        for origin in changed_origins:
-            for copy in self.__json_handler.get_copies(origin):
-                shutil_copy(str(origin), str(copy))
+        self.tree_view_layout.addWidget(self.tree_view_origins)
+        self.tree_view_layout.addWidget(self.tree_view_copies)
 
-    def __create_file(self, path: Path):
-        """
-        Create file if it does not exsists
-        """
-        foldiers: Path = path.parent
-        foldiers.mkdir(parents=True, exist_ok=True)
-        path.touch()
+        self.main_layout.addLayout(self.tree_view_layout)
+        self.widget.setLayout(self.main_layout)
+        self.setCentralWidget(self.widget)
+
+    def refreshOrigins(self):
+        self.tree_view_origins.setModel(self.origins_model)
+        self.origins_model.clear()
+        self.origins_model.setHorizontalHeaderLabels(
+            ["Name", "Path", "state"]
+        )
+        for origin in self.fs.get_origins():
+            print(f"add origin {origin}")
+            origin_str: str = str(origin.parts[-1])
+            # add to treeView
+            item = [QStandardItem(origin_str), QStandardItem(origin_str), QStandardItem("ok")]
+            self.origins_model.appendRow(item)
+            # add to comboBox
+            self.add_tool_origin_combobox.addItem(str(origin))
+
+    def refreshCopies(self):
+        self.tree_view_copies.setModel(self.copies_model)
+        self.copies_model.clear()
+        self.copies_model.setHorizontalHeaderLabels(
+            ["Name", "Path", "state"]
+        )
+        origin: Path = Path(self.add_tool_origin_combobox.currentText())
+        for copy in self.fs.get_copies(origin):
+            print(f"add copy {copy}")
+            copy_str: str = str(copy.parts[-1])
+            # add to treeView
+            item = [QStandardItem(copy_str), QStandardItem(copy_str), QStandardItem("ok")]
+            self.copies_model.appendRow(item)
+
+    def onAddToolBtnClick(self):
+        # row: int = -1
+        # if self.tree_view_origins.selectedIndexes() != []:
+        #
+        #     copy, copy_type = QFileDialog.getSaveFileName(self, "Set copy path", ".", "*")
+        #     if copy:
+        #         # self.fs.add(Path(origin), [Path(copy)])
+        # else:
+        #     # No row selected
+        #     pass
+        #
+        #
+        # self.refreshTreeViewOrigins()
+        pass
+
+    def onOriginTreeViewSelect(self):
+        # Set origin comboBox
+        if self.tree_view_origins.selectedIndexes() != []:
+            print(self.origins_model.index(self.tree_view_origins.selectedIndexes()[0].row(),1).data())
+            self.add_tool_origin_combobox.setCurrentIndex(self.tree_view_origins.selectedIndexes()[0].row())
+
+        self.refreshCopies()
+        
+
+    def onLoadSyncListClick(self):
+        fname = QFileDialog.getOpenFileName(self, 'Open sync list', 
+         '',"JSON files (*.json)")
+        print(f"set {fname[0]} as sync list")
+        if fname != '':
+            self.fs.set_synclist(Path(fname[0]))
+
+        self.refreshOrigins()
 
 
 def main() -> None:
-    origin: Path = Path('file1.file').resolve()
-    copy1: Path = Path('file2.file').resolve()
-    copy2: Path = Path('file3.file').resolve()
-    fs = FileSync()
-    fs.add(origin, [copy1, copy2])
-    fs.sync_all()
-    # for o in fs.get_origins():
-        # print(fs.get_copies(o))
-    # print(fs.list_all())
-    # print(type(origin))
-    # print(origin)
-    # print(fs.get_copies(origin))
-    # print(str(origin))
-    # fs.update_all_hashes()
-    # fs.add(origin, copy)
-    # fs.sync_two_files(origin, copy)
-    # fs.full_sync()
-    # fs.sync()
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
