@@ -7,7 +7,7 @@ from typing import List, Dict, Any
 from unittest import TestCase, main
 
 path.insert(0, "../../src/")
-from file_sync import FileSync
+from fs_core import FileSync
 from json_handler import JsonHandler
 from hash_handler import HashHandler
 from exceptions import OriginDoesNotExistsError

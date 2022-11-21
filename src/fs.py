@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Optional, List, Callable
 import typer
 
-from file_sync import FileSync
+from fs_core import FileSync
 # from json_handler import JsonHandler
 
 
