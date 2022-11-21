@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from fs_core import FileSync
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QApplication, QLineEdit, QMainWindow, QVBoxLayout, QHBoxLayout, QTreeView, QToolBar, QWidget, QMenuBar, QFileDialog, QComboBox
+from PyQt6.QtWidgets import QApplication, QLineEdit, QMainWindow, QMessageBox, QVBoxLayout, QHBoxLayout, QTreeView, QToolBar, QWidget, QMenuBar, QFileDialog, QComboBox, QLabel
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -12,7 +12,6 @@ class MainWindow(QMainWindow):
 
         self.fs = FileSync()
         self.refreshOrigins()
-        self.refreshCopies()
 
         # Window params
         self.setWindowTitle("File Sync")
@@ -33,10 +32,9 @@ class MainWindow(QMainWindow):
         self.addToolBar(self.toolbar)
 
         # add toolButton
-        self.add_tool_btn = QAction()
-        self.add_tool_btn.setText(self.tr("&Add"))
-        self.add_tool_btn.triggered.connect(self.onAddToolBtnClick)
-        self.toolbar.addAction(self.add_tool_btn)
+        self.add_tool_origin_btn = QAction()
+        self.add_tool_origin_btn.setText(self.tr("&Add"))
+        self.add_tool_origin_btn.triggered.connect(self.onAddToolAction)
 
         # sync toolButton
         self.sync_tool_btn = QAction()
@@ -65,7 +63,7 @@ class MainWindow(QMainWindow):
         self.file_menu.addAction(self.tr("&Exit"))
 
         self.action_menu = self.menu_bar.addMenu(self.tr("&Action"))
-        self.action_menu.addAction(self.add_tool_btn)
+        self.action_menu.addAction(self.add_tool_origin_btn)
         self.action_menu.addAction(self.sync_tool_btn)
         self.action_menu.addAction(self.sync_all_tool_btn)
         self.action_menu.addAction(self.delete_tool_btn)
@@ -80,8 +78,11 @@ class MainWindow(QMainWindow):
         self.toolbar_add = QToolBar("add")
         self.addToolBar(self.toolbar_add)
 
+        self.toolbar_add.addAction(self.add_tool_origin_btn)
+
         # add origin browse action
         self.add_tool_origin_action = QAction("brows")
+        self.add_tool_origin_action.triggered.connect(self.onBrowseOriginAction)
         self.toolbar_add.addAction(self.add_tool_origin_action)
 
         # add origin path comboBox
@@ -90,6 +91,7 @@ class MainWindow(QMainWindow):
 
         # add copy browse action
         self.add_tool_copy_action = QAction("brows")
+        self.add_tool_copy_action.triggered.connect(self.onBrowseCopyAction)
         self.toolbar_add.addAction(self.add_tool_copy_action)
 
         # add copy path lineEdit
@@ -100,7 +102,7 @@ class MainWindow(QMainWindow):
         self.widget = QWidget(self)
         self.main_layout = QVBoxLayout()
         self.tree_view_layout = QHBoxLayout()
-        
+
         # Add tree view for origins
         self.origins_model = QStandardItemModel(0, 3)
         self.origins_model.setHorizontalHeaderLabels(
@@ -132,12 +134,13 @@ class MainWindow(QMainWindow):
             ["Name", "Path", "state"]
         )
         for origin in self.fs.get_origins():
-            print(f"add origin {origin}")
+            print(f"display origin {origin}")
             origin_str: str = str(origin.parts[-1])
             # add to treeView
-            item = [QStandardItem(origin_str), QStandardItem(origin_str), QStandardItem("ok")]
+            item = [QStandardItem(origin_str), QStandardItem(str(origin.resolve())), QStandardItem("ok")]
             self.origins_model.appendRow(item)
             # add to comboBox
+            self.add_tool_origin_combobox.clear()
             self.add_tool_origin_combobox.addItem(str(origin))
 
     def refreshCopies(self):
@@ -146,37 +149,51 @@ class MainWindow(QMainWindow):
         self.copies_model.setHorizontalHeaderLabels(
             ["Name", "Path", "state"]
         )
-        origin: Path = Path(self.add_tool_origin_combobox.currentText())
-        for copy in self.fs.get_copies(origin):
-            print(f"add copy {copy}")
-            copy_str: str = str(copy.parts[-1])
-            # add to treeView
-            item = [QStandardItem(copy_str), QStandardItem(copy_str), QStandardItem("ok")]
-            self.copies_model.appendRow(item)
+        if self.add_tool_origin_combobox.count() != 0:
+            origin: Path = Path(self.add_tool_origin_combobox.currentText())
+            for copy in self.fs.get_copies(origin):
+                print(f"display copy {copy}")
+                copy_str: str = str(copy.parts[-1])
+                # add to treeView
+                item = [QStandardItem(copy_str), QStandardItem(str(copy.resolve())), QStandardItem("ok")]
+                self.copies_model.appendRow(item)
 
-    def onAddToolBtnClick(self):
-        # row: int = -1
-        # if self.tree_view_origins.selectedIndexes() != []:
-        #
-        #     copy, copy_type = QFileDialog.getSaveFileName(self, "Set copy path", ".", "*")
-        #     if copy:
-        #         # self.fs.add(Path(origin), [Path(copy)])
-        # else:
-        #     # No row selected
-        #     pass
-        #
-        #
-        # self.refreshTreeViewOrigins()
-        pass
+    def onAddToolAction(self):
+        copy: Path = Path(self.add_tool_copy_lineedit.text()).absolute()
+        origin: Path = Path(self.add_tool_origin_combobox.currentText())
+        print(f"copy path: {copy}")
+        if (not copy.is_dir() and not origin.is_dir()):
+            print(f"add origin: {origin}, copy: {copy}")
+            self.fs.add(origin, [copy])
+        else:
+            QMessageBox.warning(self, "Wrong path", "Copy path can not be a dir")
+
+        self.refreshOrigins()
+
+    def onBrowseOriginAction(self):
+        origin: str
+        origin, type = QFileDialog().getOpenFileName(self, caption="Add origin")
+        print(f"browse add origin path: {origin}")
+        if origin != "":
+            self.fs.add_origin(Path(origin))
+            self.refreshOrigins()
+
+    def onBrowseCopyAction(self):
+        origin: str
+        origin, type = QFileDialog().getSaveFileName(self, caption="Add copy")
+        print(f"browse add copy path: {origin}")
+        self.add_tool_copy_lineedit.setText(origin)
 
     def onOriginTreeViewSelect(self):
         # Set origin comboBox
         if self.tree_view_origins.selectedIndexes() != []:
-            print(self.origins_model.index(self.tree_view_origins.selectedIndexes()[0].row(),1).data())
-            self.add_tool_origin_combobox.setCurrentIndex(self.tree_view_origins.selectedIndexes()[0].row())
+            print(f"selected origin {self.origins_model.index(self.tree_view_origins.selectedIndexes()[0].row(),1).data()}")
+            # self.add_tool_origin_combobox.setCurrentIndex(self.tree_view_origins.selectedIndexes()[0].row())
+        else:
+            # QMessageBox.about(self, "text", "text")
+            pass
 
         self.refreshCopies()
-        
 
     def onLoadSyncListClick(self):
         fname = QFileDialog.getOpenFileName(self, 'Open sync list', 
