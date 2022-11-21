@@ -128,35 +128,39 @@ class MainWindow(QMainWindow):
         self.setCentralWidget(self.widget)
 
     def refreshOrigins(self):
-        self.tree_view_origins.setModel(self.origins_model)
         self.origins_model.clear()
         self.origins_model.setHorizontalHeaderLabels(
             ["Name", "Path"]
         )
+        self.add_tool_origin_combobox.clear()
         for origin in self.fs.get_origins():
             print(f"display origin {origin}")
             origin_str: str = str(origin.parts[-1])
             # add to treeView
-            item = [QStandardItem(origin_str), QStandardItem(str(origin.resolve()))]
-            self.origins_model.appendRow(item)
+            items = [
+                QStandardItem(origin_str),
+                QStandardItem(str(origin.resolve()))
+            ]
+            self.origins_model.appendRow(items)
             # add to comboBox
-            self.add_tool_origin_combobox.clear()
             self.add_tool_origin_combobox.addItem(str(origin))
 
     def refreshCopies(self):
-        self.tree_view_copies.setModel(self.copies_model)
         self.copies_model.clear()
         self.copies_model.setHorizontalHeaderLabels(
             ["Name", "Path", "status"]
         )
-        if self.add_tool_origin_combobox.count() != 0:
-            origin: Path = Path(self.add_tool_origin_combobox.currentText())
-            for copy in self.fs.get_copies(origin):
-                print(f"display copy {copy}")
-                copy_str: str = str(copy.parts[-1])
-                # add to treeView
-                item = [QStandardItem(copy_str), QStandardItem(str(copy.resolve())), QStandardItem(self.fs.get_copy_status(origin, copy))]
-                self.copies_model.appendRow(item)
+        origin: Path = Path(self.tree_view_origins.selectedIndexes()[0].data())
+        for copy in self.fs.get_copies(origin):
+            print(f"display copy {copy}")
+            copy_str: str = str(copy.parts[-1])
+            # add to treeView
+            items = [
+                QStandardItem(copy_str),
+                QStandardItem(str(copy.resolve())),
+                QStandardItem(self.fs.get_copy_status(origin, copy))
+            ]
+            self.copies_model.appendRow(items)
 
     def onAddToolAction(self):
         copy: Path = Path(self.add_tool_copy_lineedit.text()).absolute()
