@@ -131,13 +131,13 @@ class MainWindow(QMainWindow):
         self.tree_view_origins.setModel(self.origins_model)
         self.origins_model.clear()
         self.origins_model.setHorizontalHeaderLabels(
-            ["Name", "Path", "state"]
+            ["Name", "Path"]
         )
         for origin in self.fs.get_origins():
             print(f"display origin {origin}")
             origin_str: str = str(origin.parts[-1])
             # add to treeView
-            item = [QStandardItem(origin_str), QStandardItem(str(origin.resolve())), QStandardItem("ok")]
+            item = [QStandardItem(origin_str), QStandardItem(str(origin.resolve()))]
             self.origins_model.appendRow(item)
             # add to comboBox
             self.add_tool_origin_combobox.clear()
@@ -147,7 +147,7 @@ class MainWindow(QMainWindow):
         self.tree_view_copies.setModel(self.copies_model)
         self.copies_model.clear()
         self.copies_model.setHorizontalHeaderLabels(
-            ["Name", "Path", "state"]
+            ["Name", "Path", "status"]
         )
         if self.add_tool_origin_combobox.count() != 0:
             origin: Path = Path(self.add_tool_origin_combobox.currentText())
@@ -155,7 +155,7 @@ class MainWindow(QMainWindow):
                 print(f"display copy {copy}")
                 copy_str: str = str(copy.parts[-1])
                 # add to treeView
-                item = [QStandardItem(copy_str), QStandardItem(str(copy.resolve())), QStandardItem("ok")]
+                item = [QStandardItem(copy_str), QStandardItem(str(copy.resolve())), QStandardItem(self.fs.get_copy_status(origin, copy))]
                 self.copies_model.appendRow(item)
 
     def onAddToolAction(self):

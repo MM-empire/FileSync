@@ -132,6 +132,18 @@ class TestFileSync(TestCase):
         except Exception as e:
             self.fail(e)
 
+    def test_get_copy_status(self):
+        """Test get_copy_status"""
+        self.fs.add(self.origin, self.copies)
+        copy: Path = self.copies[0]
+        self.assertEqual("no copy", self.fs.get_copy_status(self.origin, copy))
+
+        self.create_file(copy)
+        self.assertEqual("different", self.fs.get_copy_status(self.origin, copy))
+
+        self.fs.sync(self.origin)
+        self.assertEqual("same", self.fs.get_copy_status(self.origin, copy))
+
     # def test_compare_hashes(self):
     #     """Test compare_hashes"""
     #     new_file: Path = Path("new_file.file")

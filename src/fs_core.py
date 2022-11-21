@@ -125,6 +125,23 @@ class FileSync():
         origin = origin.resolve()
         return self.__json_handler.get_copies(origin)
 
+    # TODO: make usable flags
+    def get_copy_status(self, origin: Path, copy: Path) -> str:
+        """
+        Return status of copy for given origin
+        Statuses:
+            1) same - same hashes of origin and copy
+            2) different - different hashes of origin and copy
+            3) no copy - copy does not exsists as file
+        """
+        if (not copy.is_file()):
+            return "no copy"
+        if (HashHandler.calculate_hash(origin) == 
+                HashHandler.calculate_hash(copy)):
+            return "same"
+        else:
+            return "different"
+
     def compare_hashes(self, origin: Path, copy: Path) -> bool:
         """
         Return True if hashes are the same

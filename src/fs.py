@@ -126,12 +126,7 @@ def list(
             print()
             print(origin)
             for copy in fs.get_copies(origin):
-                state: str = '-'
-                if not fs.compare_hashes(origin, copy):
-                    # changed
-                    state = 'c'
-
-                print(f"-{state}- {copy}")
+                print(f"<{fs.get_copy_status(origin, copy)}> {copy}")
 
     elif path_list:
         print("Show added files")
