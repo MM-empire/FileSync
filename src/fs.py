@@ -112,15 +112,12 @@ def list(
         readable=True,
         resolve_path=True,
         help="Path to synchronize list"),
-    all: bool = typer.Option(False,
-                             "--all",
-                             "-A",
-                             help="Show list of all add files")):
+    ):
     """
     Show files in synchronize list
     """
     fs = FileSync()
-    if all:
+    if not path_list:
         print("Show all added files")
         for origin in fs.get_origins():
             print()
