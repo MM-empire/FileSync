@@ -18,6 +18,8 @@ class TestFileSync(TestCase):
 
     def create_file(self, path: Path, msg: str = "Hello World!") -> None:
         msg = f"{str(path)} {msg}"
+        foldiers: Path = path.parent
+        foldiers.mkdir(parents=True, exist_ok=True)
         with open(path, "w") as f:
             f.write(msg)
 
@@ -197,7 +199,6 @@ class TestFileSync(TestCase):
         for copy in self.copies:
             self.assertEqual(data[str(self.origin.resolve())]['copies'][str(copy.resolve())]['hash'],
                              HashHandler.calculate_hash(copy.resolve()))
-
 
     def test_create_file(self):
         """Test __create_file"""
