@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from fs_core import FileSync
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem
-from PyQt6.QtWidgets import QApplication, QLineEdit, QMainWindow, QMessageBox, QVBoxLayout, QHBoxLayout, QTreeView, QToolBar, QWidget, QMenuBar, QFileDialog, QComboBox, QLabel
+from PyQt6.QtWidgets import QApplication, QLineEdit, QMainWindow, QMessageBox, QVBoxLayout, QHBoxLayout, QTreeView, QToolBar, QWidget, QMenuBar, QFileDialog, QComboBox
 
 class MainWindow(QMainWindow):
     def __init__(self):
@@ -37,26 +37,26 @@ class MainWindow(QMainWindow):
         self.add_tool_origin_btn.triggered.connect(self.onAddToolAction)
 
         # sync toolButton
-        self.sync_tool_btn = QAction()
-        self.sync_tool_btn.setText(self.tr("&Sync"))
-        self.toolbar.addAction(self.sync_tool_btn)
+        self.sync_action = QAction()
+        self.sync_action.setText(self.tr("&Sync"))
+        self.toolbar.addAction(self.sync_action)
 
         # sync toolButton
-        self.sync_all_tool_btn = QAction()
-        self.sync_all_tool_btn.setText(self.tr("Sync all"))
-        self.toolbar.addAction(self.sync_all_tool_btn)
+        self.sync_all_action = QAction()
+        self.sync_all_action.setText(self.tr("Sync all"))
+        self.toolbar.addAction(self.sync_all_action)
 
         # delete toolButton
-        self.delete_tool_btn = QAction()
-        self.delete_tool_btn.setText(self.tr("&Delete"))
-        self.toolbar.addAction(self.delete_tool_btn)
+        self.delete_action = QAction()
+        self.delete_action.setText(self.tr("&Delete"))
+        self.toolbar.addAction(self.delete_action)
 
         # Add menu bar
         self.menu_bar = QMenuBar()
         self.file_menu = self.menu_bar.addMenu(self.tr("&File"))
         # load sync list action
         self.load_sync_list_action = QAction(self.tr("&Load sync list.."))
-        self.load_sync_list_action.triggered.connect(self.onLoadSyncListClick)
+        self.load_sync_list_action.triggered.connect(self.onLoadSyncListAction)
         self.file_menu.addAction(self.load_sync_list_action)
 
         self.file_menu.addSeparator()
@@ -64,9 +64,9 @@ class MainWindow(QMainWindow):
 
         self.action_menu = self.menu_bar.addMenu(self.tr("&Action"))
         self.action_menu.addAction(self.add_tool_origin_btn)
-        self.action_menu.addAction(self.sync_tool_btn)
-        self.action_menu.addAction(self.sync_all_tool_btn)
-        self.action_menu.addAction(self.delete_tool_btn)
+        self.action_menu.addAction(self.sync_action)
+        self.action_menu.addAction(self.sync_all_action)
+        self.action_menu.addAction(self.delete_action)
 
         self.help_menu = self.menu_bar.addMenu(self.tr("&Help"))
         self.help_menu.addAction(self.tr("About &File Sync"))
@@ -199,7 +199,7 @@ class MainWindow(QMainWindow):
 
         self.refreshCopies()
 
-    def onLoadSyncListClick(self):
+    def onLoadSyncListAction(self):
         fname = QFileDialog.getOpenFileName(self, 'Open sync list', 
          '',"JSON files (*.json)")
         print(f"set {fname[0]} as sync list")
