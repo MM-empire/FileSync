@@ -47,6 +47,11 @@ class TestFileSync(TestCase):
         self.assertEqual([copy.resolve() for copy in self.copies],
                          self.fs.get_copies(self.origin))
 
+    def test_add_origin(self):
+        """Test add origin"""
+        self.fs.add_origin(self.origin)
+        self.assertEqual([self.origin.resolve()], self.fs.get_origins())
+
     def test_sync(self):
         """Test sync"""
         self.fs.add(self.origin, self.copies)
