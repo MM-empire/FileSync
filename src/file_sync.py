@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 import sys
 from pathlib import Path
+from typing import List
 from fs_core import FileSync
+from PyQt6.QtCore import QModelIndex
 from PyQt6.QtGui import QAction, QStandardItemModel, QStandardItem
 from PyQt6.QtWidgets import QApplication, QLineEdit, QMainWindow, QMessageBox, QVBoxLayout, QHBoxLayout, QTreeView, QToolBar, QWidget, QMenuBar, QFileDialog, QComboBox
 
@@ -39,16 +41,19 @@ class MainWindow(QMainWindow):
         # sync toolButton
         self.sync_action = QAction()
         self.sync_action.setText(self.tr("&Sync"))
+        self.sync_action.triggered.connect(self.onSyncAction)
         self.toolbar.addAction(self.sync_action)
 
         # sync toolButton
         self.sync_all_action = QAction()
         self.sync_all_action.setText(self.tr("Sync all"))
+        self.sync_all_action.triggered.connect(self.onSyncAllAction)
         self.toolbar.addAction(self.sync_all_action)
 
         # delete toolButton
         self.delete_action = QAction()
         self.delete_action.setText(self.tr("&Delete"))
+        self.delete_action.triggered.connect(self.onDeleteAction)
         self.toolbar.addAction(self.delete_action)
 
         # Add menu bar
@@ -150,17 +155,18 @@ class MainWindow(QMainWindow):
         self.copies_model.setHorizontalHeaderLabels(
             ["Name", "Path", "status"]
         )
-        origin: Path = Path(self.tree_view_origins.selectedIndexes()[0].data())
-        for copy in self.fs.get_copies(origin):
-            print(f"display copy {copy}")
-            copy_str: str = str(copy.parts[-1])
-            # add to treeView
-            items = [
-                QStandardItem(copy_str),
-                QStandardItem(str(copy.resolve())),
-                QStandardItem(self.fs.get_copy_status(origin, copy))
-            ]
-            self.copies_model.appendRow(items)
+        if self.tree_view_origins.model().rowCount() != 0:
+            origin: Path = Path(self.tree_view_origins.selectedIndexes()[0].data())
+            for copy in self.fs.get_copies(origin):
+                print(f"display copy {copy}")
+                copy_str: str = str(copy.parts[-1])
+                # add to treeView
+                items = [
+                    QStandardItem(copy_str),
+                    QStandardItem(str(copy.resolve())),
+                    QStandardItem(self.fs.get_copy_status(origin, copy))
+                ]
+                self.copies_model.appendRow(items)
 
     def onAddToolAction(self):
         copy: Path = Path(self.add_tool_copy_lineedit.text()).absolute()
@@ -198,6 +204,66 @@ class MainWindow(QMainWindow):
             pass
 
         self.refreshCopies()
+
+    def onSyncAction(self):
+        for origin in [Path(self.tree_view_origins.model().index(origin.row(), 1).data()) for origin in self.tree_view_origins.selectedIndexes()]:
+            print(f"sync origin: {origin}")
+            # TODO: move to thread
+            self.fs.sync(Path(origin))
+
+        self.refreshCopies()
+
+    def onSyncAllAction(self):
+        self.fs.sync_all()
+        print("sync all")
+        self.refreshCopies()
+
+    def onDeleteAction(self):
+        print("delete")
+        origin_indexes: List[QModelIndex]= self.tree_view_origins.selectedIndexes()
+        if (len(origin_indexes) != 0):
+            origin: Path = Path(self.tree_view_origins.model().index(origin_indexes[0].row(), 1).data())
+            print("origin", origin)
+
+            copy_selected = self.tree_view_copies.selectedIndexes()
+            if (len(copy_selected) != 0):
+                print("len(copy_selected)", len(copy_selected))
+                print("copy_selected", copy_selected)
+                copies: List[Path] = []
+                for copy in copy_selected:
+                    print(self.tree_view_copies.model().index(copy.row(), 1).data())
+                    copies.append(Path(self.tree_view_copies.model().index(copy.row(), 1).data()))
+
+                print("copies", copies)
+                self.fs.delete(origin, copies)
+                self.refreshCopies()
+
+            else:
+                # Ask confirm
+                copies_all: List[Path] = [Path(self.tree_view_copies.model().index(i, 1).data()) for i in range(self.tree_view_copies.model().rowCount())]
+                if len(copies_all) != 0:
+                    copies_str: str = ""
+                    for copy in copies_all:
+                        copies_str = f"{copies_str}\n{str(copy)}"
+
+                    msg_box = QMessageBox.question(self,
+                                                   "Delete all copies",
+                                                   f"Delete copies from sync list:\n{copies_str}",
+                                                   QMessageBox.StandardButton.Yes,
+                                                   QMessageBox.StandardButton.Cancel)
+                    if msg_box == QMessageBox.StandardButton.Yes.value:
+                        print("ok")
+                        self.fs.delete(origin)
+                        self.refreshOrigins()
+                        self.refreshCopies()
+                    if msg_box == QMessageBox.StandardButton.Cancel.value:
+                        print("cancel")
+
+                else:
+                    self.fs.delete(origin)
+                    self.refreshOrigins()
+                    self.refreshCopies()
+
 
     def onLoadSyncListAction(self):
         fname = QFileDialog.getOpenFileName(self, 'Open sync list', 
