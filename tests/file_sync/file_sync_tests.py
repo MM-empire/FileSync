@@ -18,6 +18,8 @@ class TestFileSync(TestCase):
 
     def create_file(self, path: Path, msg: str = "Hello World!") -> None:
         msg = f"{str(path)} {msg}"
+        foldiers: Path = path.parent
+        foldiers.mkdir(parents=True, exist_ok=True)
         with open(path, "w") as f:
             f.write(msg)
 
@@ -46,6 +48,11 @@ class TestFileSync(TestCase):
         self.assertEqual([self.origin.resolve()], self.fs.get_origins())
         self.assertEqual([copy.resolve() for copy in self.copies],
                          self.fs.get_copies(self.origin))
+
+    def test_add_origin(self):
+        """Test add origin"""
+        self.fs.add_origin(self.origin)
+        self.assertEqual([self.origin.resolve()], self.fs.get_origins())
 
     def test_sync(self):
         """Test sync"""
@@ -125,6 +132,18 @@ class TestFileSync(TestCase):
         except Exception as e:
             self.fail(e)
 
+    def test_get_copy_status(self):
+        """Test get_copy_status"""
+        self.fs.add(self.origin, self.copies)
+        copy: Path = self.copies[0]
+        self.assertEqual("no copy", self.fs.get_copy_status(self.origin, copy))
+
+        self.create_file(copy)
+        self.assertEqual("different", self.fs.get_copy_status(self.origin, copy))
+
+        self.fs.sync(self.origin)
+        self.assertEqual("same", self.fs.get_copy_status(self.origin, copy))
+
     # def test_compare_hashes(self):
     #     """Test compare_hashes"""
     #     new_file: Path = Path("new_file.file")
@@ -192,7 +211,6 @@ class TestFileSync(TestCase):
         for copy in self.copies:
             self.assertEqual(data[str(self.origin.resolve())]['copies'][str(copy.resolve())]['hash'],
                              HashHandler.calculate_hash(copy.resolve()))
-
 
     def test_create_file(self):
         """Test __create_file"""
