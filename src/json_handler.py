@@ -9,26 +9,26 @@ from exceptions import CopyDoesNotExistsError, \
 
 class JsonHandler():
     def __init__(self, path: Path) -> None:
-        self.path: Path = path
+        self._path: Path = path
         if not path.exists():
             self.write({})
 
     @property
     def path(self) -> Path:
-        return self.__path
+        return self._path
 
     @path.setter
     def path(self, path: Path) -> None:
         if not str(path).endswith('.json'):
             raise FileIsNotJsonError
-        self.__path = path
+        self._path = path
 
     def read(self) -> Dict[str, Any]:
-        with open(str(self.path), 'r') as file:
+        with open(str(self._path), 'r') as file:
             return load(file)
 
     def write(self, data: Dict[str, Any]) -> None:
-        with open(str(self.path), 'w') as file:
+        with open(str(self._path), 'w') as file:
             dump(data, file, indent=4)
 
     def exists_origin(self, origin: Path) -> bool:
