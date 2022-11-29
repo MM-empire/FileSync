@@ -1,10 +1,11 @@
 from sys import path
+from json import dump 
 path.insert(0, '../src/')
 from pathlib import Path
 from unittest import TestCase, main
 from json_handler import JsonHandler
 from typing import Dict, Any, List
-from os import remove
+from os import system
 
 
 class JsonHandlerTestCase(TestCase):
@@ -12,17 +13,26 @@ class JsonHandlerTestCase(TestCase):
 
     @classmethod
     def setUpClass(cls):
-        cls.path: Path = Path('testdata.json')
+        cls.path: Path = Path('testfiles/testdata.json')
         cls.jh: JsonHandler = JsonHandler(cls.path)
-        cls.testfile1: Path = Path('testfile1.file')
-        cls.testfile2: Path = Path('testfile2.file')
+        cls.testfile1: Path = Path('testfiles/testfile1.file')
+        cls.testfile2: Path = Path('testfiles/testfile2.file')
+
+        with open(cls.path, 'w') as f:
+            data: Dict[str, Any] = {'testfiles/testfile1.file': {'hash': None, 'copies':
+                {'testfiles/testfile2.file': {'hash': None}}}}
+            dump(data, f, indent=4);
+
+    @classmethod
+    def tearDownClass(cls):
+        system(f'rm {cls.path}')
 
     def test_check_get_path(self):
         self.assertEqual(self.path, self.jh.path)
     
     def test_check_read(self):
-        data: Dict[str, Any] = {'testfile1.file': {'hash': None, 'copies':
-            {'testfile2.file': {'hash': None}}}}
+        data: Dict[str, Any] = {'testfiles/testfile1.file': {'hash': None, 'copies':
+            {'testfiles/testfile2.file': {'hash': None}}}}
         _data: Dict[str, Any] = self.jh.read()
         self.assertEqual(data, _data)
 

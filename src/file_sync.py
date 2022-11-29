@@ -189,9 +189,9 @@ def main() -> None:
     origin: Path = Path('file1.file').resolve()
     copy1: Path = Path('file2.file').resolve()
     copy2: Path = Path('file3.file').resolve()
-    fs = FileSync()
+    fs = FileSync(Path('synclist.json'))
     fs.add(origin, [copy1, copy2])
-    fs.sync_all()
+    # fs.sync_all()
     #for o in fs.get_origins():
         #print(fs.get_copies(o))
     # print(fs.list_all())

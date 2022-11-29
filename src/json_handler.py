@@ -150,18 +150,23 @@ class JsonHandler():
 
 
 def main() -> None:
+    origin: Path = Path('file1.file').resolve()
+    copy1: Path = Path('file2.file').resolve()
+    copy2: Path = Path('file3.file').resolve()
     jh = JsonHandler(Path('synclist.json'))
-    # jh.add_origin(Path('file.file'))
+    jh.add_origin(origin)
     # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
-    # jh.add_copy(Path('file.file'), Path('file3.txt'))
+    jh.add_copy(origin, copy1)
     # print(jh.exists_copy(Path('file.file'), Path('file3.txt')))
     # jh.add_origin(Path('/home/user/sandbox/python/file.txt'))
-    # jh.add_copy(Path('file.file'), Path('file3.txt'))
+    jh.add_copy(origin, copy2)
+    print(jh.get_changed_copies(origin))
+    print(jh.get_all_changed_copies())
     # jh.get_changed_copies('file.file')
     # jh.get_all_changed_copies()
     # print(jh.exists_copy(Path('file.file'), Path('test-dir/file.file')))
     # print(jh.get_copies("/home/mikhail/repos/FileSync/src/file.file"))
-    print(jh.get_all_changed_origins)
+    # print(jh.get_all_changed_origins)
 
 
 if __name__ == '__main__':
