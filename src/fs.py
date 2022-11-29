@@ -17,10 +17,10 @@ TODO:
 """
 
 from pathlib import Path
-from typing import Optional, List
+from typing import Optional, List, Callable
 import typer
 
-from file_sync import FileSync
+from fs_core import FileSync
 # from json_handler import JsonHandler
 
 
@@ -66,15 +66,7 @@ def sync(
 
     elif path_list:
         print("Sync added files in path")
-        for p in path_list:
-            if p.is_dir():
-                origins: List[Path] = fs.get_origins()
-                for f in p.iterdir():
-                    # check if f in sync list
-                    if f in origins:
-                        fs.sync(f)
-            else:
-                fs.sync(p)
+        parsePathes(path_list, fs, FileSync.sync)
 
     else:
         typer.secho("No file input")
@@ -105,58 +97,40 @@ def update(
 
     elif path_list:
         print("Update statuses added files in path")
-        for p in path_list:
-            if p.is_dir():
-                origins: List[Path] = fs.get_origins()
-                for f in p.iterdir():
-                    # check if f in sync list
-                    if f in origins:
-                        fs.set_copies_hashes(f)
-            else:
-                fs.set_copies_hashes(p)
+        parsePathes(path_list, fs, FileSync.set_copies_hashes)
     else:
         typer.secho("No file input")
 
 
 @app.command()
 def list(
-    path: Optional[List[Path]] = typer.Argument(
+    path_list: Optional[List[Path]] = typer.Argument(
         None,
         exists=True,
         file_okay=True,
         readable=True,
         resolve_path=True,
         help="Path to synchronize list"),
-    all: bool = typer.Option(False,
-                             "--all",
-                             "-A",
-                             help="Show list of all add files")):
+    ):
     """
     Show files in synchronize list
     """
     fs = FileSync()
-    if all:
+    if not path_list:
         print("Show all added files")
         for origin in fs.get_origins():
             print()
             print(origin)
             for copy in fs.get_copies(origin):
-                state: str = '-'
-                if not fs.compare_hashes(origin, copy):
-                    # changed
-                    state = 'c'
+                print(f"<{fs.get_copy_status(origin, copy)}> {copy}")
 
-                print(f"-{state}- {copy}")
-
-    elif path:
+    elif path_list:
         print("Show added files")
         # print(f"working dir: {path}")
         origins = fs.get_origins()
-        for p in path:
+        for p in path_list:
             if p.is_dir():
                 for f in p.iterdir():
-                    # print("{:<50} {:<50}".format(str(f), str(origins[0].resolve())))
-                    # print(type(f), type(origins[0]), end="\n\n")
                     if f in origins:
                         print("success")
                         for copy in fs.get_copies(f):
@@ -170,6 +144,17 @@ def list(
                 if p in origins:
                     for copy in fs.get_copies(p):
                         print(copy)
+
+
+def parsePathes(path_list: List[Path], fs: FileSync, func: Callable) -> None:
+    for p in path_list:
+        if p.is_dir():
+            origins: List[Path] = fs.get_origins()
+            for f in p.iterdir():
+                if f in origins:
+                    fs.func(f)
+        else:
+            fs.func(p)
 
 
 if __name__ == "__main__":
