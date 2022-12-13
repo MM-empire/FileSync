@@ -73,9 +73,19 @@ class MainWindow(QMainWindow):
         self.action_menu.addAction(self.sync_all_action)
         self.action_menu.addAction(self.delete_action)
 
+        # About help_menu
+        self.about_file_sync = QAction()
+        self.about_file_sync.setText(self.tr("About &File Sync"))
+        self.about_file_sync.triggered.connect(self.onAboutFileSyncAction)
+
+        # About Qt
+        self.about_qt = QAction()
+        self.about_qt.setText(self.tr("About &Qt"))
+        # self.about_qt.triggered.connect()
+
         self.help_menu = self.menu_bar.addMenu(self.tr("&Help"))
-        self.help_menu.addAction(self.tr("About &File Sync"))
-        self.help_menu.addAction(self.tr("About &Qt"))
+        self.help_menu.addAction(self.about_file_sync)
+        self.help_menu.addAction(self.about_qt)
 
         self.setMenuBar(self.menu_bar)
 
@@ -273,6 +283,12 @@ class MainWindow(QMainWindow):
             self.fs.set_synclist(Path(fname[0]))
 
         self.refreshOrigins()
+
+    def onAboutFileSyncAction(self):
+        QMessageBox.about(self, "About FileSync", "FileSync is an app to sync files in different folders or different drives\nSources: https://github.com/MM-empire/FileSync")
+
+    # def onAboutFileSyncAction(self):
+    #     QMessageBox.about(self, "About FileSync", "FileSync is an app to sync files in different folders or different drives\nSources: https://github.com/MM-empire/FileSync")
 
 
 def main() -> None:
