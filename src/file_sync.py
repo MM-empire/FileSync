@@ -81,7 +81,7 @@ class MainWindow(QMainWindow):
         # About Qt
         self.about_qt = QAction()
         self.about_qt.setText(self.tr("About &Qt"))
-        # self.about_qt.triggered.connect()
+        self.about_qt.triggered.connect(self.onAboutQtAction)
 
         self.help_menu = self.menu_bar.addMenu(self.tr("&Help"))
         self.help_menu.addAction(self.about_file_sync)
@@ -287,8 +287,8 @@ class MainWindow(QMainWindow):
     def onAboutFileSyncAction(self):
         QMessageBox.about(self, "About FileSync", "FileSync is an app to sync files in different folders or different drives\nSources: https://github.com/MM-empire/FileSync")
 
-    # def onAboutFileSyncAction(self):
-    #     QMessageBox.about(self, "About FileSync", "FileSync is an app to sync files in different folders or different drives\nSources: https://github.com/MM-empire/FileSync")
+    def onAboutQtAction(self):
+        QMessageBox.aboutQt(self)
 
 
 def main() -> None:
