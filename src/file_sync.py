@@ -182,7 +182,7 @@ class MainWindow(QMainWindow):
 
     def onBrowseOriginAction(self):
         origin: str
-        origin, type = QFileDialog().getOpenFileName(self, caption="Add origin")
+        origin: type = QFileDialog().getOpenFileName(self, caption="Add origin")
         print(f"browse add origin path: {origin}")
         if origin != "":
             self.fs.add_origin(Path(origin))
@@ -190,7 +190,7 @@ class MainWindow(QMainWindow):
 
     def onBrowseCopyAction(self):
         origin: str
-        origin, type = QFileDialog().getSaveFileName(self, caption="Add copy")
+        origin: type = QFileDialog().getSaveFileName(self, caption="Add copy")
         print(f"browse add copy path: {origin}")
         self.add_tool_copy_lineedit.setText(origin)
 

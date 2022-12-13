@@ -169,6 +169,10 @@ class FileSync():
         except Exception as e:
             print("Exception handled:", e)
 
+    def exec(request):
+        res = exec(f"{request['method']}({request['data']})")
+        return res
+
     def __set_origin_hash(self, origin: Path) -> None:
         """
         Set hash for origin
