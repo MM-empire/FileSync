@@ -2,6 +2,7 @@
 
 from hashlib import sha1
 from os.path import exists
+from pathlib import Path
 
 
 class HashHandler():
